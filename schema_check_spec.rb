@@ -48,4 +48,16 @@ describe "schema_check" do
       lambda { schema_check( 3.1, ["range", {"limits" => [0,3]}] ) }.should raise_error
     end
   end
+
+  describe "the array type" do
+    it "should accept arrays" do
+      schema_check(  [1], "array" )
+    end
+    it "should accept arrays of the right type" do
+      schema_check(  [1], ["array", {"contents" => ["number"]}] )
+    end
+    it "should reject arrays of the wrong type" do
+      lambda { schema_check(  [[]], ["array", {"contents" => ["number"]}] ) }.should raise_error
+    end
+  end
 end

@@ -15,11 +15,16 @@ class IsDefinition
 end
 
 class Kind
-  attr :name, :params
+  attr :name
+  attr :params
 
   def initialize(kind)
     @name, @params = kind
     @params ||= {}
+  end
+
+  def inspect
+    [name, params].inspect
   end
 
   def method_missing(name, *args)
@@ -43,6 +48,10 @@ def schema_check( object, kind, schema = {})
     raise "not a string" unless object.is_a? String
   when IsDefinition["number"]
     raise "not a number" unless object.is_a? Numeric
+  when IsDefinition["boolean"]
+    raise "not a boolean" unless object == true || object == false
+  when IsDefinition["null"]
+    raise "not null" unless object == nil
   when IsDefinition["range"]
     raise "not a number" unless object.is_a? Numeric
     bottom, top = kind.limits!
@@ -75,7 +84,35 @@ def schema_check( object, kind, schema = {})
     end
   when IsDefinition["integer"]
     schema_check( object, "number", schema )
-    object.is_a?(Integer) or raise "#{object} is not an integer"
+    object.is_a?(Integer) or raise "#{object.inspect} is not an integer"
+  when IsDefinition["undefined"]
+    object == :undefined or raise "#{object.inspect} is defined"
+  when IsDefinition["object"]
+    object.is_a?(Hash) or raise "#{object.inspect} is not an object"
+    if kind.members?
+      kind.members.each do |name, spec|
+        val = object.has_key?(name) ? object[name] : :undefined
+        schema_check( val, spec, schema )
+      end
+      extras = object.keys - kind.members.keys
+      raise "#{extras.inspect} are not valid members" if extras != []
+    end
+  when IsDefinition["restrict"]
+    if kind.require?
+      kind.require.each do |requirement|
+        schema_check( object, requirement, schema )
+      end
+    end
+    if kind.reject?
+      kind.reject.each do |rule|
+        begin
+          schema_check( object, rule, schema )
+          false
+        rescue
+          true
+        end or raise "#{object.inspect} violates #{rule.inspect}"
+      end
+    end
   else
     raise "Invalid definition #{kind.inspect}"
   end

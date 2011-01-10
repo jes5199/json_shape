@@ -122,15 +122,159 @@ describe "schema_check" do
   end
 
   describe "the object type" do
-    it "should accept an object with the correct members"
-    it "should reject an object with missing members"
-    it "should accept an object with missing members if they are of type undefined"
-    it "should reject an object with extra members"
+    it "should accept an object" do
+      schema_check( {}, "object" )
+    end
+
+    it "should accept an object with the correct members" do
+      schema_check( {"a" => 1}, ["object", {"members" => {"a" => "integer" } } ] )
+    end
+
+    it "should reject an object with missing members" do
+      lambda { schema_check( {"a" => 1}, ["object", {"members" => {"a" => "integer", "b" => "integer" } } ] ) }.should raise_error
+    end
+
+    it "should reject an object with incorrect members" do
+      lambda { schema_check( {"a" => 1}, ["object", {"members" => {"a" => "string" } } ] ) }.should raise_error
+    end
+
+    it "should accept an object with missing members if they are of type undefined" do
+      schema_check( {"a" => 1}, ["object", {"members" => {"a" => "integer", "b" => "undefined" } } ] )
+    end
+
+    it "should reject an object with extra members" do
+      lambda { schema_check( {"a" => 1, "b" => 2}, ["object", {"members" => {"a" => "integer" } } ] ) }.should raise_error
+    end
   end
 
-  describe "the overlap type" do
-    it "should accept a value that satisfies multiple constraints"
-    it "should reject a value that satisfies a rejection constraint"
+  describe "the boolean type" do
+    it "should accept true" do
+      schema_check( true, "boolean" )
+    end
+    it "should accept false" do
+      schema_check( false, "boolean" )
+    end
+    it "should reject other values" do
+      lambda{ schema_check( 1, "boolean" ) }.should raise_error
+    end
+  end
+
+  describe "the null type" do
+    it "should accept null" do
+      schema_check( nil, "null" )
+    end
+    it "should reject other values" do
+      lambda{ schema_check( 1, "null" ) }.should raise_error
+    end
+  end
+
+  describe "the restrict type" do
+    it "should accept a value that satisfies multiple requirements" do
+      schema_check( 2,
+        ["restrict",
+          {
+            "require" => [
+              "integer",
+              ["range", {"limits" => [ 1, 5] } ],
+              ["range", {"limits" => [-2, 2] } ],
+              ["enum",  {"values" => [-2, 2] } ]
+            ]
+          }
+        ]
+      )
+    end
+    it "should reject a value that fails to satisfy a requirement" do
+      lambda {
+        schema_check( 2,
+          ["restrict",
+            {
+              "require" => [
+                "integer",
+                ["range", {"limits" => [ 1,   5] } ],
+                ["range", {"limits" => [-2,   2] } ],
+                ["enum",  {"values" => [-2, nil] } ]
+              ]
+            }
+          ]
+        )
+      }.should raise_error
+    end
+    it "should reject a value that satisfies a rejection constraint" do
+      lambda {
+        schema_check( 2,
+          ["restrict",
+            {
+              "reject" => [
+                ["range", {"limits" => [-2,   2] } ],
+                ["enum",  {"values" => [-2, nil] } ]
+              ]
+            }
+          ]
+        )
+      }.should raise_error
+    end
+
+    it "should accept a value that satisfies requirements and avoids rejections" do
+      schema_check( 2,
+        ["restrict",
+          {
+            "require" => [
+              "integer",
+              ["range", {"limits" => [ 1, 5] } ],
+              ["range", {"limits" => [-2, 2] } ],
+              ["enum",  {"values" => [-2, 2] } ]
+            ],
+            "reject" => [
+              ["range", {"limits" => [-2, 1.9] } ],
+              ["enum",  {"values" => [-2, nil] } ]
+            ]
+          }
+        ]
+      )
+    end
+
+    it "should reject a value that satisfies requirements but violates a rejection rule" do
+      lambda {
+        schema_check( 2,
+          ["restrict",
+            {
+              "require" => [
+                "integer",
+                ["range", {"limits" => [ 1, 5] } ],
+                ["range", {"limits" => [-2, 2] } ],
+                ["enum",  {"values" => [-2, 2] } ]
+              ],
+              "reject" => [
+                ["range", {"limits" => [-2, 1.9] } ],
+                ["enum",  {"values" => [-2,   2] } ]
+              ]
+            }
+          ]
+        )
+      }.should raise_error
+    end
+
+    it "should reject a value that fails to satisfy requirements but doesn't violate a rejection rule" do
+      lambda {
+        schema_check( 2,
+          ["restrict",
+            {
+              "require" => [
+                "integer",
+                ["range", {"limits" => [ 1,   5] } ],
+                ["range", {"limits" => [-2, 1.9] } ],
+                ["enum",  {"values" => [-2,   2] } ]
+              ],
+              "reject" => [
+                ["range", {"limits" => [-2, 1.9] } ],
+                ["enum",  {"values" => [-2, nil] } ]
+              ]
+            }
+          ]
+        )
+      }.should raise_error
+    end
+
   end
 
   describe "named types" do

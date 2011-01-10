@@ -55,14 +55,18 @@ def schema_check( object, kind, schema = {})
       end
     end
   when IsDefinition["either"]
-    kind.choices!.find_first do |choice|
+    kind.choices!.find_index do |choice|
       begin 
         schema_check( object, choice, schema )
         true
       rescue
         false
       end
-    end
+    end or raise "does not match any of #{kind.choices.inspect}"
+  when IsDefinition["enum"]
+    kind.values!.find_index do |value|
+      value == object
+    end or raise "does not match any of #{kind.values.inspect}"
   else
     raise "Invalid definition #{kind.inspect}"
   end

@@ -60,4 +60,26 @@ describe "schema_check" do
       lambda { schema_check(  [[]], ["array", {"contents" => ["number"]}] ) }.should raise_error
     end
   end
+
+  describe "the either type" do
+    it "should accept any one of the given subtypes" do
+      schema_check( [], ["either", {"choices" => ["array", "number"]}] )
+      schema_check(  1, ["either", {"choices" => ["array", "number"]}] )
+    end
+
+    it "should reject an unlisted subtype" do
+      lambda{ schema_check(  false, ["either", {"choices" => ["array", "number"]}] ) }.should raise_error
+    end
+  end
+
+  describe "the enum type" do
+    it "should accept any of the given values" do
+      schema_check(    "hello", ["enum", {"values" => ["hello", "goodbye"]}] )
+      schema_check(  "goodbye", ["enum", {"values" => ["hello", "goodbye"]}] )
+    end
+    it "should reject any other value" do
+      lambda { schema_check(    "elephant", ["enum", {"values" => ["hello", "goodbye"]}] ) }.should raise_error
+      lambda { schema_check(            {}, ["enum", {"values" => ["hello", "goodbye"]}] ) }.should raise_error
+    end
+  end
 end

@@ -3,7 +3,9 @@
   "definition" : ["either", {"choices": ["definition_name", "definition_pair"]}],
 
   "builtin_type" : ["enum", {
-    "values": ["string", "number", "boolean", "null", "undefined", "array", "object", "anything", "integer", "enum", "range", "tuple", "dictionary", "either", "restrict" ]
+    "values": ["string", "number", "boolean", "null", "undefined", "array", "object", "anything",
+               "literal", "integer", "enum", "range", "tuple", "dictionary", "either", "restrict"
+              ]
   }],
 
   "definition_name" : [ "either", {
@@ -15,26 +17,17 @@
 
   "definition_pair" : ["either", {"choices" :
     [
-      [ "tuple", {"elements": [ "string_literal_array",      "array_parameters"      ] } ],
-      [ "tuple", {"elements": [ "string_literal_object",     "object_parameters"     ] } ],
-      [ "tuple", {"elements": [ "string_literal_dictionary", "dictionary_parameters" ] } ],
-      [ "tuple", {"elements": [ "string_literal_restrict",   "restrict_parameters"   ] } ],
-      [ "tuple", {"elements": [ "string_literal_enum",       "enum_parameters"       ] } ],
-      [ "tuple", {"elements": [ "string_literal_range",      "range_parameters"      ] } ],
-      [ "tuple", {"elements": [ "string_literal_tuple",      "tuple_parameters"      ] } ],
-      [ "tuple", {"elements": [ "string_literal_either",     "either_parameters"     ] } ]
+      [ "tuple", {"elements": [ ["literal", "literal"]   , "anything"              ] } ],
+      [ "tuple", {"elements": [ ["literal", "array"]     , "array_parameters"      ] } ],
+      [ "tuple", {"elements": [ ["literal", "object"]    , "object_parameters"     ] } ],
+      [ "tuple", {"elements": [ ["literal", "dictionary"], "dictionary_parameters" ] } ],
+      [ "tuple", {"elements": [ ["literal", "restrict"]  , "restrict_parameters"   ] } ],
+      [ "tuple", {"elements": [ ["literal", "enum"]      , "enum_parameters"       ] } ],
+      [ "tuple", {"elements": [ ["literal", "range"]     , "range_parameters"      ] } ],
+      [ "tuple", {"elements": [ ["literal", "tuple"]     , "tuple_parameters"      ] } ],
+      [ "tuple", {"elements": [ ["literal", "either"]    , "either_parameters"     ] } ]
     ]
   }],
-
-  // hrmmm. Maybe I've made it too hard to define a literal.
-  "string_literal_array":      ["enum", {"values": ["array"]     }],
-  "string_literal_object":     ["enum", {"values": ["object"]    }],
-  "string_literal_dictionary": ["enum", {"values": ["dictionary"]}],
-  "string_literal_restrict":   ["enum", {"values": ["restrict"]  }],
-  "string_literal_enum":       ["enum", {"values": ["enum"]      }],
-  "string_literal_range":      ["enum", {"values": ["range"]     }],
-  "string_literal_tuple":      ["enum", {"values": ["tuple"]     }],
-  "string_literal_either":     ["enum", {"values": ["either"]    }],
 
   "custom_type" : ["restrict", {
     "require": ["string"],
@@ -50,7 +43,7 @@
   }],
 
   "builtin_type_with_mandatory_parameters" : ["enum", {
-    "values": ["enum", "range", "tuple", "either"]
+    "values": ["literal", "enum", "range", "tuple", "either"]
   }],
 
   "optional_definition": [ "either", { "choices": [ "undefined", "definition" ] } ],

@@ -82,6 +82,9 @@ def schema_check( object, kind, schema = {})
   when IsDefinition["anything"]
     object != :undefined or raise "#{object.inspect} is undefined"
 
+  when IsDefinition["literal"]
+    object == kind.params or raise "#{object.inspect} != #{kind.params.inspect}"
+
   when IsDefinition["integer"]
     schema_check( object, "number", schema )
     object.is_a?(Integer) or raise "#{object.inspect} is not an integer"

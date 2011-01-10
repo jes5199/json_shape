@@ -7,6 +7,19 @@ describe "schema_check" do
     end
   end
 
+  describe "the literal type" do
+    it "should match literal matches" do
+      schema_check( "x", ["literal", "x"] )
+      schema_check( {"x"=>"y"}, ["literal", {"x"=>"y"}] )
+    end
+
+    it "should not match if the literal does not match" do
+      lambda { schema_check( "x", ["literal", {"x" => "y"}] ) }.should raise_error
+      lambda { schema_check( {"x"=>"y"}, ["literal", {"x"=>"z"}] ) }.should raise_error
+      lambda { schema_check( 1, ["literal", "1"] ) }.should raise_error
+    end
+  end
+
   describe "the 'string' type" do 
     it "should validate strings" do
       schema_check( "x", "string" )

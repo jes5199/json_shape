@@ -80,7 +80,7 @@ def schema_check( object, kind, schema = {})
 
   # obvious extensions
   when IsDefinition["anything"]
-    true
+    object != :undefined or raise "#{object.inspect} is undefined"
 
   when IsDefinition["integer"]
     schema_check( object, "number", schema )

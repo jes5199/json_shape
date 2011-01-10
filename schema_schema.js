@@ -12,9 +12,6 @@
     "choices": [ "custom_type", "builtin_type_with_optional_parameters", "builtin_type_without_parameters" ]
   } ],
 
-  "parameterized_type" : ["either", {"choices": ["builtin_type_with_optional_parameters", "builtin_type_with_mandatory_parameters"] }],
-  "definition_pair" : ["tuple", {"elements": ["parameterized_type", "definition_parameters"]}],
-
   "definition_pair" : ["either", {"choices" :
     [
       [ "tuple", {"elements": [ ["literal", "literal"]   , "anything"              ] } ],

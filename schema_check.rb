@@ -73,6 +73,9 @@ def schema_check( object, kind, schema = {})
     kind.elements!.zip(object).each do |spec, value|
       schema_check( value, spec, schema )
     end
+  when IsDefinition["integer"]
+    schema_check( object, "number", schema )
+    object.is_a?(Integer) or raise "#{object} is not an integer"
   else
     raise "Invalid definition #{kind.inspect}"
   end

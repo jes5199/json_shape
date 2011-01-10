@@ -12,4 +12,5 @@
   "bar": ["tuple", {"elements" => ["monkey","elephant"]}],
   "blurble": ["object", {"members" => {"x": "number", "y": "number"}}],
   "foe": ["integer"]
+  // TODO: union, disunion
 }

@@ -109,4 +109,15 @@ describe "schema_check" do
       }.should raise_error
     end
   end
+  describe "the integer type" do
+    it "should accept integers" do
+      schema_check( 1, "integer" )
+    end
+    it "should reject floats" do
+      lambda{ schema_check( 1.0, "integer" ) }.should raise_error
+    end
+    it "should reject strings" do
+      lambda{ schema_check( "1", "integer" ) }.should raise_error
+    end
+  end
 end

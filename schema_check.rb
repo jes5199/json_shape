@@ -114,7 +114,11 @@ def schema_check( object, kind, schema = {})
       end
     end
   else
-    raise "Invalid definition #{kind.inspect}"
+    if schema[kind.name]
+      schema_check( object, schema[kind.name], schema )
+    else
+      raise "Invalid definition #{kind.inspect}"
+    end
   end
 end
 

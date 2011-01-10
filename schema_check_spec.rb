@@ -278,6 +278,21 @@ describe "schema_check" do
   end
 
   describe "named types" do
-    it "should work"
+    it "should work" do
+      schema_check( 2, "foo", { "foo" => "integer" } )
+    end
+
+    it "should enforce the refered type" do
+      lambda { schema_check( 2, "foo", { "foo" => "array" } ) }.should raise_error
+    end
+
+    it "should work recursively" do
+      schema_check( 2, "foo", { "foo" => "bar", "bar" => ["integer", {"range" => [-1,2]}] } )
+      lambda { schema_check( 3, "foo", { "foo" => "bar", "bar" => ["range", {"limit" => [-1,2] } ] } ) }.should raise_error
+    end
+
+    it "should not allow undefined types" do
+      lambda { schema_check( 2, "bar", { "foo" => "integer" } ) }.should raise_error
+    end
   end
 end

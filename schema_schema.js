@@ -13,18 +13,28 @@
   "parameterized_type" : ["either", {"choices": ["builtin_type_with_optional_parameters", "builtin_type_with_mandatory_parameters"] }],
   "definition_pair" : ["tuple", {"elements": ["parameterized_type", "definition_parameters"]}],
 
-  "definition_parameters" : ["either", {"choices" :
+  "definition_pair" : ["either", {"choices" :
     [
-      "array_parameters",
-      "object_parameters",
-      "dictionary_parameters",
-      "restrict_parameters",
-      "enum_parameters",
-      "range_parameters",
-      "tuple_parameters",
-      "either_parameters"
+      [ "tuple", {"elements": [ "string_literal_array",      "array_parameters"      ] } ],
+      [ "tuple", {"elements": [ "string_literal_object",     "object_parameters"     ] } ],
+      [ "tuple", {"elements": [ "string_literal_dictionary", "dictionary_parameters" ] } ],
+      [ "tuple", {"elements": [ "string_literal_restrict",   "restrict_parameters"   ] } ],
+      [ "tuple", {"elements": [ "string_literal_enum",       "enum_parameters"       ] } ],
+      [ "tuple", {"elements": [ "string_literal_range",      "range_parameters"      ] } ],
+      [ "tuple", {"elements": [ "string_literal_tuple",      "tuple_parameters"      ] } ],
+      [ "tuple", {"elements": [ "string_literal_either",     "either_parameters"     ] } ]
     ]
   }],
+
+  // hrmmm. Maybe I've made it too hard to define a literal.
+  "string_literal_array":      ["enum", {"values": ["array"]     }],
+  "string_literal_object":     ["enum", {"values": ["object"]    }],
+  "string_literal_dictionary": ["enum", {"values": ["dictionary"]}],
+  "string_literal_restrict":   ["enum", {"values": ["restrict"]  }],
+  "string_literal_enum":       ["enum", {"values": ["enum"]      }],
+  "string_literal_range":      ["enum", {"values": ["range"]     }],
+  "string_literal_tuple":      ["enum", {"values": ["tuple"]     }],
+  "string_literal_either":     ["enum", {"values": ["either"]    }],
 
   "custom_type" : ["restrict", {
     "require": ["string"],

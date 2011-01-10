@@ -116,7 +116,7 @@ def schema_check( object, kind, schema = {})
       rescue
         false
       end
-    end or raise "does not match any of #{kind.choices.inspect}"
+    end or raise "#{object.inspect} does not match any of #{kind.choices.inspect}"
 
   when IsDefinition["restrict"]
     if kind.require?

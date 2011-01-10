@@ -120,4 +120,16 @@ describe "schema_check" do
       lambda{ schema_check( "1", "integer" ) }.should raise_error
     end
   end
+
+  describe "the object type" do
+    it "should accept an object with the correct members"
+    it "should reject an object with missing members"
+    it "should accept an object with missing members if they are of type undefined"
+    it "should reject an object with extra members"
+  end
+
+  describe "the overlap type" do
+    it "should accept a value that satisfies multiple constraints"
+    it "should reject a value that satisfies a rejection constraint"
+  end
 end

@@ -43,7 +43,10 @@ end
 
 def schema_check( object, kind, schema = {})
   kind = Kind.new(kind)
+
   case kind
+  
+  # simple values
   when IsDefinition["string"]
     raise "not a string" unless object.is_a? String
   when IsDefinition["number"]
@@ -52,10 +55,10 @@ def schema_check( object, kind, schema = {})
     raise "not a boolean" unless object == true || object == false
   when IsDefinition["null"]
     raise "not null" unless object == nil
-  when IsDefinition["range"]
-    raise "not a number" unless object.is_a? Numeric
-    bottom, top = kind.limits!
-    raise "value out of range" unless (bottom..top).include?(object)
+  when IsDefinition["undefined"]
+    object == :undefined or raise "#{object.inspect} is defined"
+
+  # complex values
   when IsDefinition["array"]
     raise "not an array" unless object.is_a? Array
     object.each do |entry|
@@ -63,30 +66,7 @@ def schema_check( object, kind, schema = {})
         schema_check( entry, kind.contents, schema )
       end
     end
-  when IsDefinition["either"]
-    kind.choices!.find_index do |choice|
-      begin 
-        schema_check( object, choice, schema )
-        true
-      rescue
-        false
-      end
-    end or raise "does not match any of #{kind.choices.inspect}"
-  when IsDefinition["enum"]
-    kind.values!.find_index do |value|
-      value == object
-    end or raise "does not match any of #{kind.values.inspect}"
-  when IsDefinition["tuple"]
-    schema_check( object, "array", schema )
-    raise "tuple is the wrong size" if object.length != kind.elements!.length
-    kind.elements!.zip(object).each do |spec, value|
-      schema_check( value, spec, schema )
-    end
-  when IsDefinition["integer"]
-    schema_check( object, "number", schema )
-    object.is_a?(Integer) or raise "#{object.inspect} is not an integer"
-  when IsDefinition["undefined"]
-    object == :undefined or raise "#{object.inspect} is defined"
+
   when IsDefinition["object"]
     object.is_a?(Hash) or raise "#{object.inspect} is not an object"
     if kind.members?
@@ -97,6 +77,40 @@ def schema_check( object, kind, schema = {})
       extras = object.keys - kind.members.keys
       raise "#{extras.inspect} are not valid members" if extras != []
     end
+
+  # obvious extensions
+  when IsDefinition["integer"]
+    schema_check( object, "number", schema )
+    object.is_a?(Integer) or raise "#{object.inspect} is not an integer"
+
+  when IsDefinition["tuple"]
+    schema_check( object, "array", schema )
+    raise "tuple is the wrong size" if object.length != kind.elements!.length
+    kind.elements!.zip(object).each do |spec, value|
+      schema_check( value, spec, schema )
+    end
+
+  when IsDefinition["enum"]
+    kind.values!.find_index do |value|
+      value == object
+    end or raise "does not match any of #{kind.values.inspect}"
+
+  when IsDefinition["range"]
+    raise "not a number" unless object.is_a? Numeric
+    bottom, top = kind.limits!
+    raise "value out of range" unless (bottom..top).include?(object)
+
+  # set theory
+  when IsDefinition["either"]
+    kind.choices!.find_index do |choice|
+      begin 
+        schema_check( object, choice, schema )
+        true
+      rescue
+        false
+      end
+    end or raise "does not match any of #{kind.choices.inspect}"
+
   when IsDefinition["restrict"]
     if kind.require?
       kind.require.each do |requirement|
@@ -113,6 +127,8 @@ def schema_check( object, kind, schema = {})
         end or raise "#{object.inspect} violates #{rule.inspect}"
       end
     end
+
+  # custom types
   else
     if schema[kind.name]
       schema_check( object, schema[kind.name], schema )

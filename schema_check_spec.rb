@@ -1,6 +1,12 @@
 require 'schema_check'
 
 describe "schema_check" do
+  describe "the anything type" do
+    it "should validate strings" do
+      schema_check( "x", "anything" )
+    end
+  end
+
   describe "the 'string' type" do 
     it "should validate strings" do
       schema_check( "x", "string" )

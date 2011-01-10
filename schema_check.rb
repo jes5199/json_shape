@@ -79,6 +79,9 @@ def schema_check( object, kind, schema = {})
     end
 
   # obvious extensions
+  when IsDefinition["anything"]
+    true
+
   when IsDefinition["integer"]
     schema_check( object, "number", schema )
     object.is_a?(Integer) or raise "#{object.inspect} is not an integer"

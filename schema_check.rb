@@ -1,4 +1,6 @@
 class IsDefinition
+  attr :name, :params
+
   def self.[](name)
     self.new(name)
   end
@@ -7,15 +9,13 @@ class IsDefinition
   end
 
   def ===(val)
-    return true if val == @name
-    return true if val.first == @name
+    return true if val.name == @name
   end
+
 end
 
 class Kind
-  def self.[](name)
-    self.new(name)
-  end
+  attr :name, :params
 
   def initialize(kind)
     @name, @params = kind
@@ -37,6 +37,7 @@ class Kind
 end
 
 def schema_check( object, kind, schema = {})
+  kind = Kind.new(kind)
   case kind
   when IsDefinition["string"]
     raise "not a string" unless object.is_a? String
@@ -44,13 +45,22 @@ def schema_check( object, kind, schema = {})
     raise "not a number" unless object.is_a? Numeric
   when IsDefinition["range"]
     raise "not a number" unless object.is_a? Numeric
-    bottom, top = Kind[kind].limits!
+    bottom, top = kind.limits!
     raise "value out of range" unless (bottom..top).include?(object)
   when IsDefinition["array"]
     raise "not an array" unless object.is_a? Array
     object.each do |entry|
-      if Kind[kind].contents?
-        schema_check( entry, Kind[kind].contents, schema )
+      if kind.contents?
+        schema_check( entry, kind.contents, schema )
+      end
+    end
+  when IsDefinition["either"]
+    kind.choices!.find_first do |choice|
+      begin 
+        schema_check( object, choice, schema )
+        true
+      rescue
+        false
       end
     end
   else

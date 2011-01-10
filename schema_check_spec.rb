@@ -132,4 +132,8 @@ describe "schema_check" do
     it "should accept a value that satisfies multiple constraints"
     it "should reject a value that satisfies a rejection constraint"
   end
+
+  describe "named types" do
+    it "should work"
+  end
 end

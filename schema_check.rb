@@ -105,7 +105,7 @@ def schema_check( object, kind, schema = {})
 
   when IsDefinition["dictionary"]
     schema_check( object, "object", schema )
-    schema_check( object.values, ["array", kind.params] )
+    schema_check( object.values, ["array", kind.params], schema )
 
   # set theory
   when IsDefinition["either"]

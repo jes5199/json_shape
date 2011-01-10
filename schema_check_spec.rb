@@ -165,6 +165,10 @@ describe "schema_check" do
     it "should reject values of the wrong type" do
       lambda { schema_check(  {"a" => []}, ["dictionary", {"contents" => "number"}] ) }.should raise_error
     end
+
+    it "should respect custom types" do
+      schema_check(  {"a" => 1}, ["dictionary", {"contents" => "foo"}], {"foo" => "number"} )
+    end
   end
 
   describe "the boolean type" do

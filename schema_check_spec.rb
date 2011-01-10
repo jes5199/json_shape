@@ -54,10 +54,10 @@ describe "schema_check" do
       schema_check(  [1], "array" )
     end
     it "should accept arrays of the right type" do
-      schema_check(  [1], ["array", {"contents" => ["number"]}] )
+      schema_check(  [1], ["array", {"contents" => "number"}] )
     end
     it "should reject arrays of the wrong type" do
-      lambda { schema_check(  [[]], ["array", {"contents" => ["number"]}] ) }.should raise_error
+      lambda { schema_check(  [[]], ["array", {"contents" => "number"}] ) }.should raise_error
     end
   end
 
@@ -144,6 +144,20 @@ describe "schema_check" do
 
     it "should reject an object with extra members" do
       lambda { schema_check( {"a" => 1, "b" => 2}, ["object", {"members" => {"a" => "integer" } } ] ) }.should raise_error
+    end
+  end
+
+  describe "the dictionary type" do
+    it "should accept an object" do
+      schema_check( {}, "dictionary" )
+    end
+
+    it "should accept values of the correct type" do
+      schema_check(  {"a" => 1}, ["dictionary", {"contents" => "number"}] )
+    end
+
+    it "should reject values of the wrong type" do
+      lambda { schema_check(  {"a" => []}, ["dictionary", {"contents" => "number"}] ) }.should raise_error
     end
   end
 

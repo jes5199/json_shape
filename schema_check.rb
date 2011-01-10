@@ -83,13 +83,6 @@ def schema_check( object, kind, schema = {})
     schema_check( object, "number", schema )
     object.is_a?(Integer) or raise "#{object.inspect} is not an integer"
 
-  when IsDefinition["tuple"]
-    schema_check( object, "array", schema )
-    raise "tuple is the wrong size" if object.length != kind.elements!.length
-    kind.elements!.zip(object).each do |spec, value|
-      schema_check( value, spec, schema )
-    end
-
   when IsDefinition["enum"]
     kind.values!.find_index do |value|
       value == object
@@ -99,6 +92,17 @@ def schema_check( object, kind, schema = {})
     raise "not a number" unless object.is_a? Numeric
     bottom, top = kind.limits!
     raise "value out of range" unless (bottom..top).include?(object)
+
+  when IsDefinition["tuple"]
+    schema_check( object, "array", schema )
+    raise "tuple is the wrong size" if object.length != kind.elements!.length
+    kind.elements!.zip(object).each do |spec, value|
+      schema_check( value, spec, schema )
+    end
+
+  when IsDefinition["dictionary"]
+    schema_check( object, "object", schema )
+    schema_check( object.values, ["array", kind.params] )
 
   # set theory
   when IsDefinition["either"]

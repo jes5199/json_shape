@@ -1,3 +1,3 @@
 {
-  "schema" : "object"
+  "schema" : "object",
 }

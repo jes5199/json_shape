@@ -9,7 +9,7 @@
                 }
               ],
   "thing": ["either", {"choices" => ["foo", "elephant"]},
-  "bar": ["tuple", {"entries" => ["monkey","elephant"]}],
+  "bar": ["tuple", {"elements" => ["monkey","elephant"]}],
   "blurble": ["object", {"members" => {"x": "number", "y": "number"}}],
   "foe": ["integer"]
 }

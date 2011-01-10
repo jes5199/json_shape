@@ -82,4 +82,31 @@ describe "schema_check" do
       lambda { schema_check(            {}, ["enum", {"values" => ["hello", "goodbye"]}] ) }.should raise_error
     end
   end
+
+  describe "the tuple type" do
+    it "should accept an array of the given types" do
+      schema_check( ["a", 1, [2]], ["tuple", {"elements" => ["string", ["range", {"limits" => [0,1]}], ["array", {"contents" => "number" }]  ]}] )
+    end
+
+    it "should not accept anything that isn't an array" do
+      lambda {
+        schema_check( {}, ["tuple", {"elements" => ["string", ["range", {"limits" => [0,1]}], ["array", {"contents" => "number" }]  ]}] )
+      }.should raise_error
+    end
+    it "should not accept an array that is too short" do
+      lambda {
+        schema_check( ["a", 1], ["tuple", {"elements" => ["string", ["range", {"limits" => [0,1]}], ["array", {"contents" => "number" }]  ]}] )
+      }.should raise_error
+    end
+    it "should not accept an array that is too long" do
+      lambda {
+        schema_check( ["a", 1, [2], 5], ["tuple", {"elements" => ["string", ["range", {"limits" => [0,1]}], ["array", {"contents" => "number" }]  ]}] )
+      }.should raise_error
+    end
+    it "should not accept an array where an entry has the wrong type" do
+      lambda {
+        schema_check( ["a", 1, ["b"]], ["tuple", {"elements" => ["string", ["range", {"limits" => [0,1]}], ["array", {"contents" => "number" }]  ]}] )
+      }.should raise_error
+    end
+  end
 end

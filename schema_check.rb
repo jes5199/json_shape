@@ -67,6 +67,12 @@ def schema_check( object, kind, schema = {})
     kind.values!.find_index do |value|
       value == object
     end or raise "does not match any of #{kind.values.inspect}"
+  when IsDefinition["tuple"]
+    schema_check( object, "array", schema )
+    raise "tuple is the wrong size" if object.length != kind.elements!.length
+    kind.elements!.zip(object).each do |spec, value|
+      schema_check( value, spec, schema )
+    end
   else
     raise "Invalid definition #{kind.inspect}"
   end

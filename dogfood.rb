@@ -1,8 +1,8 @@
 require 'rubygems'
 require 'json'
-require 'schema_check'
+require 'json_shape'
 
 schema = JSON.parse( File.read( "schema_schema.js" ) )
 
-schema_check( schema, "schema", schema )
+JsonShape.schema_check( schema, "schema", schema )
 

@@ -1,6 +1,6 @@
 {
   "schema" : ["dictionary", {"contents": "definition"}],
-  "definition" : ["either", {"choices": ["definition_name", "definition_pair"]}],
+  "definition" : ["either", {"choices": ["definition_atom", "definition_pair"]}],
 
   "builtin_type" : ["enum", {
     "values": ["string", "number", "boolean", "null", "undefined", "array", "object", "anything",
@@ -9,7 +9,7 @@
               ]
   }],
 
-  "definition_name" : [ "either", {
+  "definition_atom" : [ "either", {
     "choices": [ "custom_type", "builtin_type_with_optional_parameters", "builtin_type_without_parameters" ]
   } ],
 
@@ -50,7 +50,7 @@
 
   "array_parameters": [ "object", {"members": { "contents": "optional_definition" } } ],
 
-  "object_parameters": [ "object", {"members": { "members": ["dictionary", { "contents": "definition" } ] } } ],
+  "object_parameters": [ "object", {"members": { "members": ["optional", ["dictionary", { "contents": "definition" } ] ] } } ],
 
   "dictionary_parameters": [ "object", {"members": {"contents": "optional_definition" } } ],
 

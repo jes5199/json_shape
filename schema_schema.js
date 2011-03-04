@@ -1,6 +1,6 @@
 {
   "schema" : ["dictionary", {"contents": "definition"}],
-  "definition" : ["either", {"choices": ["definition_atom", "definition_pair"]}],
+  "definition" : ["either", {"choices": ["definition_atom", "definition_singleton", "definition_pair"]}],
 
   "builtin_type" : ["enum", {
     "values": ["string", "number", "boolean", "null", "undefined", "array", "object", "anything",
@@ -13,14 +13,22 @@
     "choices": [ "custom_type", "builtin_type_with_optional_parameters", "builtin_type_without_parameters" ]
   } ],
 
+  "definition_singleton" : [ "tuple", {
+    "elements": [ "definition_atom" ]
+  } ],
+
   "definition_pair" : ["either", {"choices" :
     [
+      [ "tuple", {"elements": [ "builtin_type_without_parameters", ["literal",{}]  ] } ],
+
       [ "tuple", {"elements": [ ["literal", "literal"]   , "anything"              ] } ],
       [ "tuple", {"elements": [ ["literal", "optional"]  , "definition"            ] } ],
+
       [ "tuple", {"elements": [ ["literal", "array"]     , "array_parameters"      ] } ],
       [ "tuple", {"elements": [ ["literal", "object"]    , "object_parameters"     ] } ],
       [ "tuple", {"elements": [ ["literal", "dictionary"], "dictionary_parameters" ] } ],
       [ "tuple", {"elements": [ ["literal", "restrict"]  , "restrict_parameters"   ] } ],
+
       [ "tuple", {"elements": [ ["literal", "enum"]      , "enum_parameters"       ] } ],
       [ "tuple", {"elements": [ ["literal", "range"]     , "range_parameters"      ] } ],
       [ "tuple", {"elements": [ ["literal", "tuple"]     , "tuple_parameters"      ] } ],

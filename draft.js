@@ -3,14 +3,14 @@
   "monkey": "string",
   "foo": ["enum", {"values": ["a","b","c"]}],
   "fie": ["range", {"limits": [1,10]}],
-  "elephant": ["array", 
+  "elephant": ["array",
                 {
-                  "contents": "monkey",
+                  "contents": "monkey"
                 }
               ],
-  "thing": ["either", {"choices" => ["foo", "elephant"]},
-  "bar": ["tuple", {"elements" => ["monkey","elephant"]}],
-  "blurble": ["object", {"members" => {"x": "number", "y": "number"}}],
-  "foe": ["integer"]
-  // TODO: union, disunion
+  "thing": ["either", {"choices": ["foo", "elephant"]}],
+  "bar": ["tuple", {"elements": ["monkey","elephant"]}],
+  "blurble": ["object", {"members": {"x": "number", "y": "number"}}],
+  "foe": ["integer"],
+  "fum": ["integer", {}]
 }

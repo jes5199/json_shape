@@ -13,6 +13,11 @@ describe "JsonShape.schema_check" do
       JsonShape.schema_check( {"x"=>"y"}, ["literal", {"x"=>"y"}] )
     end
 
+    it "should cope with false" do
+      JsonShape.schema_check( false, ["literal", false] )
+      lambda { JsonShape.schema_check( true, ["literal", false] ) }.should raise_error
+    end
+
     it "should not match if the literal does not match" do
       lambda { JsonShape.schema_check( "x", ["literal", {"x" => "y"}] ) }.should raise_error
       lambda { JsonShape.schema_check( {"x"=>"y"}, ["literal", {"x"=>"z"}] ) }.should raise_error
@@ -127,6 +132,10 @@ describe "JsonShape.schema_check" do
         JsonShape.schema_check( ["a", 1, ["b"]], ["tuple", {"elements" => ["string", ["range", {"limits" => [0,1]}], ["array", {"contents" => "number" }]  ]}] )
       }.should raise_error
     end
+    it "should allow optional elements at the end" do
+      JsonShape.schema_check( ["a", 1], ["tuple", {"elements" => ["string", ["range", {"limits" => [0,1]}], ["optional", ["array", {"contents" => "number" }]]  ]}] )
+      JsonShape.schema_check( ["a", 1, [2]], ["tuple", {"elements" => ["string", ["range", {"limits" => [0,1]}], ["optional", ["array", {"contents" => "number" }]]  ]}] )
+    end
   end
   describe "the integer type" do
     it "should accept integers" do
@@ -159,6 +168,10 @@ describe "JsonShape.schema_check" do
 
     it "should accept an object with missing members if they are of type undefined" do
       JsonShape.schema_check( {"a" => 1}, ["object", {"members" => {"a" => "integer", "b" => "undefined" } } ] )
+    end
+
+    it "should accept an object with missing members if they are optional" do
+      JsonShape.schema_check( {"a" => 1}, ["object", {"members" => {"a" => "integer", "b" => ["optional", "integer"] } } ] )
     end
 
     it "should reject an object with extra members" do

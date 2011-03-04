@@ -4,7 +4,8 @@
 
   "builtin_type" : ["enum", {
     "values": ["string", "number", "boolean", "null", "undefined", "array", "object", "anything",
-               "literal", "integer", "enum", "range", "tuple", "dictionary", "either", "restrict"
+               "literal", "optional", "integer", "enum", "range",
+               "tuple", "dictionary", "either", "restrict"
               ]
   }],
 
@@ -15,6 +16,7 @@
   "definition_pair" : ["either", {"choices" :
     [
       [ "tuple", {"elements": [ ["literal", "literal"]   , "anything"              ] } ],
+      [ "tuple", {"elements": [ ["literal", "optional"]  , "definition"            ] } ],
       [ "tuple", {"elements": [ ["literal", "array"]     , "array_parameters"      ] } ],
       [ "tuple", {"elements": [ ["literal", "object"]    , "object_parameters"     ] } ],
       [ "tuple", {"elements": [ ["literal", "dictionary"], "dictionary_parameters" ] } ],
@@ -43,10 +45,8 @@
     "values": ["literal", "enum", "range", "tuple", "either"]
   }],
 
-  "optional_definition": [ "either", { "choices": [ "undefined", "definition" ] } ],
-  "optional_definitions": [ "either", { "choices": [ "undefined", 
-    ["array", {"contents": "definition"}]
-  ] } ],
+  "optional_definition": [ "optional", "definition" ],
+  "optional_definitions": [ "optional", ["array", {"contents": "definition"} ] ],
 
   "array_parameters": [ "object", { "contents": "optional_definition" } ],
 

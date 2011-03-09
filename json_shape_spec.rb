@@ -83,6 +83,10 @@ describe "JsonShape.schema_check" do
     it "should reject arrays of the wrong type" do
       lambda { JsonShape.schema_check(  [[]], ["array", {"contents" => "number"}] ) }.should raise_error
     end
+    it "should allow tests on array length" do
+      JsonShape.schema_check(  [1], ["array", {"length" => ["literal", 1]}] )
+      lambda { JsonShape.schema_check(  [1], ["array", {"length" => ["literal", 2]}] ) }.should raise_error
+    end
   end
 
   describe "the either type" do

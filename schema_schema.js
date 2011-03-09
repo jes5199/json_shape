@@ -56,7 +56,10 @@
   "optional_definition": [ "optional", "definition" ],
   "optional_definitions": [ "optional", ["array", {"contents": "definition"} ] ],
 
-  "array_parameters": [ "object", {"members": { "contents": "optional_definition" } } ],
+  "array_parameters": [ "object", {"members": {
+    "contents": "optional_definition",
+    "length":   "optional_definition"
+  } } ],
 
   "object_parameters": [ "object", {"members": {
     "members": ["optional", ["dictionary", { "contents": "definition"} ] ],

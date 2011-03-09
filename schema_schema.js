@@ -58,7 +58,11 @@
 
   "array_parameters": [ "object", {"members": { "contents": "optional_definition" } } ],
 
-  "object_parameters": [ "object", {"members": { "members": ["optional", ["dictionary", { "contents": "definition" } ] ] } } ],
+  "object_parameters": [ "object", {"members": {
+    "members": ["optional", ["dictionary", { "contents": "definition"} ] ],
+    "allow_extra":   ["optional", "boolean"],
+    "allow_missing": ["optional", "boolean"]
+  } } ],
 
   "dictionary_parameters": [ "object", {"members": {"contents": "optional_definition" } } ],
 

@@ -70,6 +70,9 @@ module JsonShape
     # simple values
     when IsDefinition["string"]
       failure["not a string"] unless object.is_a? String
+      if kind.matches? and object !~ Regexp.new(kind.matches)
+        failure["does not match /#{kind.matches}/"]
+      end
     when IsDefinition["number"]
       failure["not a number"] unless object.is_a? Numeric
     when IsDefinition["boolean"]

@@ -50,6 +50,14 @@ describe "JsonShape.schema_check" do
       it "should validate strings" do
         JsonShape.schema_check( "x", ["string", {}] )
       end
+
+      it "should accept strings matching a supplied regex" do
+        JsonShape.schema_check( "my,fancy-string", ["string", {"matches" => '^\w+,\w+-\w+$'}] )
+      end
+
+      it "should reject strings not matching a supplied regex" do
+        lambda { JsonShape.schema_check( "my,fancy-string with.other/characters", ["string", {"matches" => '^\w+,\w+-\w+$'}] ) }.should raise_error
+      end
     end
   end
 

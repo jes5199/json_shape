@@ -24,6 +24,7 @@
       [ "tuple", {"elements": [ ["literal", "literal"]   , "anything"              ] } ],
       [ "tuple", {"elements": [ ["literal", "optional"]  , "definition"            ] } ],
 
+      [ "tuple", {"elements": [ ["literal", "string"]    , "string_parameters"     ] } ],
       [ "tuple", {"elements": [ ["literal", "array"]     , "array_parameters"      ] } ],
       [ "tuple", {"elements": [ ["literal", "object"]    , "object_parameters"     ] } ],
       [ "tuple", {"elements": [ ["literal", "dictionary"], "dictionary_parameters" ] } ],
@@ -42,11 +43,11 @@
   } ],
 
   "builtin_type_without_parameters" : ["enum", {
-    "values": ["string", "number", "boolean", "null", "undefined", "anything", "integer"]
+    "values": ["boolean", "number", "null", "undefined", "anything", "integer"]
   } ],
 
   "builtin_type_with_optional_parameters" :  ["enum", {
-    "values": ["array", "object", "dictionary", "restrict"]
+    "values": ["string", "array", "object", "dictionary", "restrict"]
   } ],
 
   "builtin_type_with_mandatory_parameters" : ["enum", {
@@ -55,6 +56,8 @@
 
   "optional_definition": [ "optional", "definition" ],
   "optional_definitions": [ "optional", ["array", {"contents": "definition"} ] ],
+
+  "string_parameters": [ "object", {"members": {"matches": ["optional", "string"] } } ],
 
   "array_parameters": [ "object", {"members": {
     "contents": "optional_definition",

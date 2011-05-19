@@ -141,6 +141,15 @@ describe "JsonShape.schema_check" do
       JsonShape.schema_check( ["a", 1, [2]], ["tuple", {"elements" => ["string", ["range", {"limits" => [0,1]}], ["optional", ["array", {"contents" => "number" }]]  ]}] )
     end
   end
+
+  describe "the number type" do
+    it "should accept integers" do
+      JsonShape.schema_check( 1, "number" )
+    end
+    it "should accept floats" do
+      JsonShape.schema_check( 1.0, "number" )
+    end
+  end
   describe "the integer type" do
     it "should accept integers" do
       JsonShape.schema_check( 1, "integer" )

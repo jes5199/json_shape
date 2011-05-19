@@ -75,7 +75,7 @@
     "allow_missing": ["optional", "boolean"]
   } } ],
 
-  "dictionary_parameters": [ "object", {"members": {"contents": "optional_definition" } } ],
+  "dictionary_parameters": [ "object", {"members": {"keys": ["optional", "string"], "contents": "optional_definition" } } ],
 
   "restrict_parameters": [ "object", {"members": {
     "require" : "optional_definitions",

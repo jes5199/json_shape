@@ -214,6 +214,14 @@ describe "JsonShape.schema_check" do
     it "should respect custom types" do
       JsonShape.schema_check(  {"a" => 1}, ["dictionary", {"contents" => "foo"}], {"foo" => "number"} )
     end
+
+    it "should accept dictionaries whose keys match the pattern specified" do
+      JsonShape.schema_check( {"foo-bar.baz" => "my_value"}, ["dictionary", {"keys" => '^\w+-\w+\.\w+$'}] )
+    end
+
+    it "should reject dictionaries whose keys do not match the pattern specified" do
+      lambda { JsonShape.schema_check( {"foo.bar-baz" => "my_value"}, ["dictionary", {"keys" => '^\w+-\w+\.\w+$'}] ) }.should raise_error
+    end
   end
 
   describe "the boolean type" do

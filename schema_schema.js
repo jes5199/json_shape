@@ -25,6 +25,8 @@
       [ "tuple", {"elements": [ ["literal", "optional"]  , "definition"            ] } ],
 
       [ "tuple", {"elements": [ ["literal", "string"]    , "string_parameters"     ] } ],
+      [ "tuple", {"elements": [ ["literal", "number"]    , "number_parameters"     ] } ],
+      [ "tuple", {"elements": [ ["literal", "integer"]   , "integer_parameters"    ] } ],
       [ "tuple", {"elements": [ ["literal", "array"]     , "array_parameters"      ] } ],
       [ "tuple", {"elements": [ ["literal", "object"]    , "object_parameters"     ] } ],
       [ "tuple", {"elements": [ ["literal", "dictionary"], "dictionary_parameters" ] } ],
@@ -43,11 +45,11 @@
   } ],
 
   "builtin_type_without_parameters" : ["enum", {
-    "values": ["boolean", "number", "null", "undefined", "anything", "integer"]
+    "values": ["boolean", "null", "undefined", "anything"]
   } ],
 
   "builtin_type_with_optional_parameters" :  ["enum", {
-    "values": ["string", "array", "object", "dictionary", "restrict"]
+    "values": ["string", "number", "integer", "array", "object", "dictionary", "restrict"]
   } ],
 
   "builtin_type_with_mandatory_parameters" : ["enum", {
@@ -58,6 +60,10 @@
   "optional_definitions": [ "optional", ["array", {"contents": "definition"} ] ],
 
   "string_parameters": [ "object", {"members": {"matches": ["optional", "string"] } } ],
+
+  "number_parameters": [ "object", {"members": {"min": ["optional", "number"], "max": ["optional", "number"] } } ],
+
+  "integer_parameters": [ "object", {"members": {"min": ["optional", "integer"], "max": ["optional", "integer"] } } ],
 
   "array_parameters": [ "object", {"members": {
     "contents": "optional_definition",

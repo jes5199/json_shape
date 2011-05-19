@@ -75,6 +75,8 @@ module JsonShape
       end
     when IsDefinition["number"]
       failure["not a number"] unless object.is_a? Numeric
+      failure["less than min #{kind.min}"] if kind.min? and object < kind.min
+      failure["greater than max #{kind.max}"] if kind.max? and object > kind.max
     when IsDefinition["boolean"]
       failure["not a boolean"] unless object == true || object == false
     when IsDefinition["null"]
@@ -116,7 +118,7 @@ module JsonShape
       object == kind.params or failure[ "doesn't match" ]
 
     when IsDefinition["integer"]
-      schema_check( object, "number", schema, path)
+      schema_check( object, ["number", kind.params], schema, path)
       object.is_a?(Integer) or failure[ "is not an integer" ]
 
     when IsDefinition["enum"]

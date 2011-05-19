@@ -157,6 +157,15 @@ describe "JsonShape.schema_check" do
     it "should accept floats" do
       JsonShape.schema_check( 1.0, "number" )
     end
+    it "should accept numbers within specified boundaries" do
+      JsonShape.schema_check( 3.5, ["number", {"min" => 0.5, "max" => 5.2}] )
+    end
+    it "should reject numbers less than the minimum" do
+      lambda { JsonShape.schema_check( 8999.9, ["number", {"min" => 9000}] ) }.should raise_error
+    end
+    it "should reject numbers greater than the minimum" do
+      lambda { JsonShape.schema_check( 3.14, ["number", {"max" => 3}] ) }.should raise_error
+    end
   end
   describe "the integer type" do
     it "should accept integers" do
@@ -167,6 +176,15 @@ describe "JsonShape.schema_check" do
     end
     it "should reject strings" do
       lambda{ JsonShape.schema_check( "1", "integer" ) }.should raise_error
+    end
+    it "should accept integers within specified boundaries" do
+      JsonShape.schema_check( 50, ["integer", {"min" => 0, "max" => 100}] )
+    end
+    it "should reject integers less than the minimum" do
+      lambda { JsonShape.schema_check( 50, ["integer", {"min" => 100}] ) }.should raise_error
+    end
+    it "should reject integers greater than the minimum" do
+      lambda { JsonShape.schema_check( 50, ["integer", {"max" => 0}] ) }.should raise_error
     end
   end
 

@@ -61,26 +61,6 @@ describe "JsonShape.schema_check" do
     end
   end
 
-  describe "the range predicate" do
-    it "should reject strings" do
-      lambda { JsonShape.schema_check( "1", ["range", {}] ) }.should raise_error
-    end
-
-    it "should accept numbers in the range" do
-      JsonShape.schema_check(   1, ["range", {"limits" => [0,3]}] )
-      JsonShape.schema_check(   0, ["range", {"limits" => [0,3]}] )
-      JsonShape.schema_check(   3, ["range", {"limits" => [0,3]}] )
-      JsonShape.schema_check( 2.8, ["range", {"limits" => [0,3]}] )
-      JsonShape.schema_check( 3.0, ["range", {"limits" => [0,3]}] )
-    end
-
-    it "should reject numbers out of the range" do
-      lambda { JsonShape.schema_check(  -1, ["range", {"limits" => [0,3]}] ) }.should raise_error
-      lambda { JsonShape.schema_check(   4, ["range", {"limits" => [0,3]}] ) }.should raise_error
-      lambda { JsonShape.schema_check( 3.1, ["range", {"limits" => [0,3]}] ) }.should raise_error
-    end
-  end
-
   describe "the array type" do
     it "should accept arrays" do
       JsonShape.schema_check(  [1], "array" )
@@ -121,32 +101,32 @@ describe "JsonShape.schema_check" do
 
   describe "the tuple type" do
     it "should accept an array of the given types" do
-      JsonShape.schema_check( ["a", 1, [2]], ["tuple", {"elements" => ["string", ["range", {"limits" => [0,1]}], ["array", {"contents" => "number" }]  ]}] )
+      JsonShape.schema_check( ["a", 1, [2]], ["tuple", {"elements" => ["string", ["integer", {"min" => 0, "max" => 1}], ["array", {"contents" => "number" }]  ]}] )
     end
 
     it "should not accept anything that isn't an array" do
       lambda {
-        JsonShape.schema_check( {}, ["tuple", {"elements" => ["string", ["range", {"limits" => [0,1]}], ["array", {"contents" => "number" }]  ]}] )
+        JsonShape.schema_check( {}, ["tuple", {"elements" => ["string", ["integer", {"min" => 0, "max" => 1}], ["array", {"contents" => "number" }]  ]}] )
       }.should raise_error
     end
     it "should not accept an array that is too short" do
       lambda {
-        JsonShape.schema_check( ["a", 1], ["tuple", {"elements" => ["string", ["range", {"limits" => [0,1]}], ["array", {"contents" => "number" }]  ]}] )
+        JsonShape.schema_check( ["a", 1], ["tuple", {"elements" => ["string", ["integer", {"min" => 0, "max" => 1}], ["array", {"contents" => "number" }]  ]}] )
       }.should raise_error
     end
     it "should not accept an array that is too long" do
       lambda {
-        JsonShape.schema_check( ["a", 1, [2], 5], ["tuple", {"elements" => ["string", ["range", {"limits" => [0,1]}], ["array", {"contents" => "number" }]  ]}] )
+        JsonShape.schema_check( ["a", 1, [2], 5], ["tuple", {"elements" => ["string", ["integer", {"min" => 0, "max" => 1}], ["array", {"contents" => "number" }]  ]}] )
       }.should raise_error
     end
     it "should not accept an array where an entry has the wrong type" do
       lambda {
-        JsonShape.schema_check( ["a", 1, ["b"]], ["tuple", {"elements" => ["string", ["range", {"limits" => [0,1]}], ["array", {"contents" => "number" }]  ]}] )
+        JsonShape.schema_check( ["a", 1, ["b"]], ["tuple", {"elements" => ["string", ["integer", {"min" => 0, "max" => 1}], ["array", {"contents" => "number" }]  ]}] )
       }.should raise_error
     end
     it "should allow optional elements at the end" do
-      JsonShape.schema_check( ["a", 1], ["tuple", {"elements" => ["string", ["range", {"limits" => [0,1]}], ["optional", ["array", {"contents" => "number" }]]  ]}] )
-      JsonShape.schema_check( ["a", 1, [2]], ["tuple", {"elements" => ["string", ["range", {"limits" => [0,1]}], ["optional", ["array", {"contents" => "number" }]]  ]}] )
+      JsonShape.schema_check( ["a", 1], ["tuple", {"elements" => ["string", ["integer", {"min" => 0, "max" => 1}], ["optional", ["array", {"contents" => "number" }]]  ]}] )
+      JsonShape.schema_check( ["a", 1, [2]], ["tuple", {"elements" => ["string", ["integer", {"min" => 0, "max" => 1}], ["optional", ["array", {"contents" => "number" }]]  ]}] )
     end
   end
 
@@ -264,9 +244,9 @@ describe "JsonShape.schema_check" do
           {
             "require" => [
               "integer",
-              ["range", {"limits" => [ 1, 5] } ],
-              ["range", {"limits" => [-2, 2] } ],
-              ["enum",  {"values" => [-2, 2] } ]
+              ["integer", {"min" => 1,  "max" => 5 } ],
+              ["integer", {"min" => -2, "max" => 2 } ],
+              ["enum",    {"values" => [-2, 2]     } ]
             ]
           }
         ]
@@ -279,9 +259,9 @@ describe "JsonShape.schema_check" do
             {
               "require" => [
                 "integer",
-                ["range", {"limits" => [ 1,   5] } ],
-                ["range", {"limits" => [-2,   2] } ],
-                ["enum",  {"values" => [-2, nil] } ]
+                ["integer", {"min" => 1,  "max" => 5} ],
+                ["integer", {"min" => -2, "max" => 2} ],
+                ["enum",    {"values" => [-2, nil]  } ]
               ]
             }
           ]
@@ -294,8 +274,8 @@ describe "JsonShape.schema_check" do
           ["restrict",
             {
               "reject" => [
-                ["range", {"limits" => [-2,   2] } ],
-                ["enum",  {"values" => [-2, nil] } ]
+                ["integer", {"min" => -2, "max" => 2} ],
+                ["enum",    {"values" => [-2, nil]  } ]
               ]
             }
           ]
@@ -309,13 +289,13 @@ describe "JsonShape.schema_check" do
           {
             "require" => [
               "integer",
-              ["range", {"limits" => [ 1, 5] } ],
-              ["range", {"limits" => [-2, 2] } ],
-              ["enum",  {"values" => [-2, 2] } ]
+              ["integer", {"min" => 1,  "max" => 5 } ],
+              ["integer", {"min" => -2, "max" => 2 } ],
+              ["enum",    {"values" => [-2, 2]     } ]
             ],
             "reject" => [
-              ["range", {"limits" => [-2, 1.9] } ],
-              ["enum",  {"values" => [-2, nil] } ]
+              ["number", {"min" => -2, "max" => 1.9} ],
+              ["enum",   {"values" => [-2, nil]    } ]
             ]
           }
         ]
@@ -329,13 +309,13 @@ describe "JsonShape.schema_check" do
             {
               "require" => [
                 "integer",
-                ["range", {"limits" => [ 1, 5] } ],
-                ["range", {"limits" => [-2, 2] } ],
-                ["enum",  {"values" => [-2, 2] } ]
+                ["integer", {"min" => 1, "max" => 5 } ],
+                ["integer", {"min" => -2, "max" => 2} ],
+                ["enum",    {"values" => [-2, 2]    } ]
               ],
               "reject" => [
-                ["range", {"limits" => [-2, 1.9] } ],
-                ["enum",  {"values" => [-2,   2] } ]
+                ["number", {"min" => -2, "max" => 1.9} ],
+                ["enum",   {"values" => [-2, 2]      } ]
               ]
             }
           ]
@@ -350,13 +330,13 @@ describe "JsonShape.schema_check" do
             {
               "require" => [
                 "integer",
-                ["range", {"limits" => [ 1,   5] } ],
-                ["range", {"limits" => [-2, 1.9] } ],
-                ["enum",  {"values" => [-2,   2] } ]
+                ["integer", {"min" => 1, "max" => 5   } ],
+                ["number",  {"min" => -2, "max" => 1.9} ],
+                ["enum",    {"values" => [-2, 2]      } ]
               ],
               "reject" => [
-                ["range", {"limits" => [-2, 1.9] } ],
-                ["enum",  {"values" => [-2, nil] } ]
+                ["number", {"min" => -2, "max" => 1.9} ],
+                ["enum",   {"values" => [-2, nil]    } ]
               ]
             }
           ]
@@ -376,8 +356,8 @@ describe "JsonShape.schema_check" do
     end
 
     it "should work recursively" do
-      JsonShape.schema_check( 2, "foo", { "foo" => "bar", "bar" => ["integer", {"range" => [-1,2]}] } )
-      lambda { JsonShape.schema_check( 3, "foo", { "foo" => "bar", "bar" => ["range", {"limit" => [-1,2] } ] } ) }.should raise_error
+      JsonShape.schema_check( 2, "foo", { "foo" => "bar", "bar" => ["integer", {"min" => -1, "max" => 2} ] } )
+      lambda { JsonShape.schema_check( 3, "foo", { "foo" => "bar", "bar" => ["integer", {"min" => -1, "max" => 2} ] } ) }.should raise_error
     end
 
     it "should not allow undefined types" do

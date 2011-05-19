@@ -126,11 +126,6 @@ module JsonShape
         value == object
       end or failure["does not match any choice"]
 
-    when IsDefinition["range"]
-      failure["not a number"] unless object.is_a? Numeric
-      bottom, top = kind.limits!
-      failure["value out of range"] unless (bottom..top).include?(object)
-
     when IsDefinition["tuple"]
       schema_check( object, "array", schema, path )
       failure["tuple is the wrong size"] if object.length > kind.elements!.length

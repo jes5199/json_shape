@@ -70,8 +70,13 @@ module JsonShape
     # simple values
     when IsDefinition["string"]
       failure["not a string"] unless object.is_a? String
+      if kind.matches? and object !~ Regexp.new(kind.matches)
+        failure["does not match /#{kind.matches}/"]
+      end
     when IsDefinition["number"]
       failure["not a number"] unless object.is_a? Numeric
+      failure["less than min #{kind.min}"] if kind.min? and object < kind.min
+      failure["greater than max #{kind.max}"] if kind.max? and object > kind.max
     when IsDefinition["boolean"]
       failure["not a boolean"] unless object == true || object == false
     when IsDefinition["null"]
@@ -113,18 +118,13 @@ module JsonShape
       object == kind.params or failure[ "doesn't match" ]
 
     when IsDefinition["integer"]
-      schema_check( object, "number", schema, path)
+      schema_check( object, ["number", kind.params], schema, path)
       object.is_a?(Integer) or failure[ "is not an integer" ]
 
     when IsDefinition["enum"]
       kind.values!.find_index do |value|
         value == object
       end or failure["does not match any choice"]
-
-    when IsDefinition["range"]
-      failure["not a number"] unless object.is_a? Numeric
-      bottom, top = kind.limits!
-      failure["value out of range"] unless (bottom..top).include?(object)
 
     when IsDefinition["tuple"]
       schema_check( object, "array", schema, path )
@@ -137,9 +137,13 @@ module JsonShape
 
     when IsDefinition["dictionary"]
       schema_check( object, "object", schema, path )
-      if kind.contents?
-        object.each do |key, value|
+      regexp = Regexp.new(kind.keys) if kind.keys?
+      object.each do |key, value|
+        if kind.contents?
           schema_check( value, kind.contents, schema, path + [key] )
+        end
+        if regexp and key !~ regexp
+          failure["key '#{key}'does not match /#{kind.matches}/"]
         end
       end
 

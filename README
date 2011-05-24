@@ -13,13 +13,23 @@ It is possible to validate a given json_shape schema using the schema_scheme.js 
 
 Valid built-in types are:
 
-"string" - matches any string
-"number" - matches any number (float or integer)
 "boolean" - matches true or false
 "null" - only matches null (nil in ruby)
 "undefined" - only matches members of a tuple beyond the last entry and absent members of objects
 "anything" - matches anything that isn't "undefined"
+
+"string" - matches any string
+        optional argument object:
+          "matches": an optional string containing a regular expression which the string must match
+
+"number" - matches any number (float or integer)
+        optional argument object:
+          "min": an optional number which the number must be greater than or equal to
+          "max": an optional number which the number must be less than or equal to
 "integer" - only matches whole numbers
+        optional argument object:
+          "min": an optional integer which the integer must be greater than or equal to
+          "max": an optional integer which the integer must be less than or equal to
 
 "array" - matches any array
         optional argument object:
@@ -34,6 +44,7 @@ Valid built-in types are:
 
 "dictionary" - matches any object (hash in ruby)
         optional argument object:
+          "keys": an optional string containing a regular expression which all keys must conform to
           "contents": an optional type predicate that all member values in the object must conform to
 "restrict" - matches anything
         optional argument object:
@@ -44,9 +55,6 @@ Valid built-in types are:
 "optional" - takes one type predicate as a parameter. The value must either match the given type, or be undefined.
 "enum" - takes a mandatory argument object:
         "values": a list of literals. The value must match one of the given literals exactly.
-"range" - only matches numbers
-        mandatory argument object:
-          "limits": a tuple of two numbers. The number value must be greater than or equal to the first value and less than or equal to the second value.
 "tuple" - only matches arrays
         mandatory argument object:
           "elements": a list of type predicates. Each entry in the array must match the corresponding type in this list, in order.

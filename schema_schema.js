@@ -4,7 +4,7 @@
 
   "builtin_type" : [ "enum", {
     "values": ["string", "number", "boolean", "null", "undefined", "array", "object", "anything",
-               "literal", "optional", "integer", "enum",
+               "literal", "optional", "nullable", "integer", "enum",
                "tuple", "dictionary", "either", "restrict"
               ]
   } ],
@@ -23,6 +23,7 @@
 
       [ "tuple", {"elements": [ ["literal", "literal"]   , "anything"              ] } ],
       [ "tuple", {"elements": [ ["literal", "optional"]  , "definition"            ] } ],
+      [ "tuple", {"elements": [ ["literal", "nullable"]  , "definition"            ] } ],
 
       [ "tuple", {"elements": [ ["literal", "string"]    , "string_parameters"     ] } ],
       [ "tuple", {"elements": [ ["literal", "number"]    , "number_parameters"     ] } ],
@@ -52,7 +53,7 @@
   } ],
 
   "builtin_type_with_mandatory_parameters" : ["enum", {
-    "values": ["literal", "optional", "enum", "tuple", "either"]
+    "values": ["literal", "optional", "nullable", "enum", "tuple", "either"]
   } ],
 
   "optional_definition": [ "optional", "definition" ],

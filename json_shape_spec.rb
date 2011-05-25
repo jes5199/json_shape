@@ -25,6 +25,23 @@ describe "JsonShape.schema_check" do
     end
   end
 
+  describe "the nullable type" do
+    it "should match definition matches" do
+      JsonShape.schema_check( "x", ["nullable", "string"] )
+      JsonShape.schema_check( {"x"=>"y"}, ["nullable", ["literal", {"x"=>"y"}]] )
+    end
+
+    it "should match nulls" do
+      JsonShape.schema_check( nil, ["nullable", "string"] )
+      JsonShape.schema_check( nil, ["nullable", ["literal", {"x"=>"y"}]] )
+    end
+    
+    it "should not match unmatching subdefinitions" do
+      lambda{ JsonShape.schema_check( "x", ["nullable", "number"] ) }.should raise_error
+    end
+  end
+  
+
   describe "the 'string' type" do
     it "should validate strings" do
       JsonShape.schema_check( "x", "string" )

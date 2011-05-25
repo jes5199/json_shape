@@ -161,6 +161,9 @@ module JsonShape
     when IsDefinition["optional"]
       object == :undefined or schema_check( object, kind.params, schema, path )
 
+    when IsDefinition["nullable"]
+      object == nil or schema_check( object, kind.params, schema, path )
+
     when IsDefinition["restrict"]
       if kind.require?
         kind.require.each do |requirement|

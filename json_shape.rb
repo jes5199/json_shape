@@ -192,3 +192,22 @@ module JsonShape
   end
 end
 
+if __FILE__ == $0
+  require 'rubygems'
+  require 'json'
+  require 'json_shape'
+  
+  schema = JSON.parse( File.read( ARGV[0] ) )
+  
+  type = ARGV[1]
+  
+  if ARGV[2]
+    stream = File.open(ARGV[2])
+  else
+    stream = STDIN
+  end
+  
+  data = JSON.parse( stream.read )
+  
+  JsonShape.schema_check( data, type, schema )
+end

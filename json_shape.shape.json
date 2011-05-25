@@ -1,5 +1,5 @@
 {
-  "schema" : [ "dictionary", {"contents": "definition"} ],
+  "json_shape" : [ "dictionary", {"contents": "definition"} ],
   "definition" : [ "either", {"choices": ["definition_atom", "definition_singleton", "definition_pair"] } ],
 
   "builtin_type" : [ "enum", {

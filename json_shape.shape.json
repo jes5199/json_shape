@@ -1,5 +1,5 @@
 {
-  "json_shape" : [ "dictionary", {"contents": "definition"} ],
+  "json_shape" : [ "dictionary", {"contents": "definition"}, "A json_shape schema object"  ],
   "definition" : [ "either", {"choices": ["definition_atom", "definition_singleton", "definition_pair"] } ],
 
   "builtin_type" : [ "enum", {
@@ -19,25 +19,27 @@
 
   "definition_pair" : ["either", {"choices" :
     [
-      [ "tuple", {"elements": [ "builtin_type_without_parameters", ["literal",{}]  ] } ],
+      [ "tuple", {"elements": [ "builtin_type_without_parameters", ["literal",{}] , "comment"] } ],
 
-      [ "tuple", {"elements": [ ["literal", "literal"]   , "anything"              ] } ],
-      [ "tuple", {"elements": [ ["literal", "optional"]  , "definition"            ] } ],
-      [ "tuple", {"elements": [ ["literal", "nullable"]  , "definition"            ] } ],
+      [ "tuple", {"elements": [ ["literal", "literal"]   , "anything"             , "comment"] } ],
+      [ "tuple", {"elements": [ ["literal", "optional"]  , "definition"           , "comment"] } ],
+      [ "tuple", {"elements": [ ["literal", "nullable"]  , "definition"           , "comment"] } ],
 
-      [ "tuple", {"elements": [ ["literal", "string"]    , "string_parameters"     ] } ],
-      [ "tuple", {"elements": [ ["literal", "number"]    , "number_parameters"     ] } ],
-      [ "tuple", {"elements": [ ["literal", "integer"]   , "integer_parameters"    ] } ],
-      [ "tuple", {"elements": [ ["literal", "array"]     , "array_parameters"      ] } ],
-      [ "tuple", {"elements": [ ["literal", "object"]    , "object_parameters"     ] } ],
-      [ "tuple", {"elements": [ ["literal", "dictionary"], "dictionary_parameters" ] } ],
-      [ "tuple", {"elements": [ ["literal", "restrict"]  , "restrict_parameters"   ] } ],
+      [ "tuple", {"elements": [ ["literal", "string"]    , "string_parameters"    , "comment"] } ],
+      [ "tuple", {"elements": [ ["literal", "number"]    , "number_parameters"    , "comment"] } ],
+      [ "tuple", {"elements": [ ["literal", "integer"]   , "integer_parameters"   , "comment"] } ],
+      [ "tuple", {"elements": [ ["literal", "array"]     , "array_parameters"     , "comment"] } ],
+      [ "tuple", {"elements": [ ["literal", "object"]    , "object_parameters"    , "comment"] } ],
+      [ "tuple", {"elements": [ ["literal", "dictionary"], "dictionary_parameters", "comment"] } ],
+      [ "tuple", {"elements": [ ["literal", "restrict"]  , "restrict_parameters"  , "comment"] } ],
 
-      [ "tuple", {"elements": [ ["literal", "enum"]      , "enum_parameters"       ] } ],
-      [ "tuple", {"elements": [ ["literal", "tuple"]     , "tuple_parameters"      ] } ],
-      [ "tuple", {"elements": [ ["literal", "either"]    , "either_parameters"     ] } ]
+      [ "tuple", {"elements": [ ["literal", "enum"]      , "enum_parameters"      , "comment"] } ],
+      [ "tuple", {"elements": [ ["literal", "tuple"]     , "tuple_parameters"     , "comment"] } ],
+      [ "tuple", {"elements": [ ["literal", "either"]    , "either_parameters"    , "comment"] } ]
     ]
   } ],
+
+  "comment" : ["optional", "string"],
 
   "custom_type" : ["restrict", {
     "require": ["string"],

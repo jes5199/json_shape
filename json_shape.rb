@@ -52,7 +52,7 @@ module JsonShape
     end
 
     def to_s
-      "#{ @message }: #{ @object.inspect } found when expecting #{ @kind.inspect }, at #{ @path.inspect }"
+      "#{ @message }: #{ @object.inspect } found when expecting #{ @kind.inspect }, at #{ @path.join('/') }"
     end
 
     def message

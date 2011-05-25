@@ -232,12 +232,12 @@ describe "JsonShape.schema_check" do
       JsonShape.schema_check(  {"a" => 1}, ["dictionary", {"contents" => "foo"}], {"foo" => "number"} )
     end
 
-    it "should accept dictionaries whose keys match the pattern specified" do
-      JsonShape.schema_check( {"foo-bar.baz" => "my_value"}, ["dictionary", {"keys" => '^\w+-\w+\.\w+$'}] )
+    it "should accept dictionaries whose keys match the type specified" do
+      JsonShape.schema_check( {"foo-bar.baz" => "my_value"}, ["dictionary", {"keys" => ["string", {"matches" => '^\w+-\w+\.\w+$'} ] } ] )
     end
 
-    it "should reject dictionaries whose keys do not match the pattern specified" do
-      lambda { JsonShape.schema_check( {"foo.bar-baz" => "my_value"}, ["dictionary", {"keys" => '^\w+-\w+\.\w+$'}] ) }.should raise_error
+    it "should reject dictionaries whose keys do not match the type specified" do
+      lambda { JsonShape.schema_check( {"foo.bar-baz" => "my_value"}, ["dictionary", {"keys" => ["string", {"matches" => '^\w+-\w+\.\w+$'} ] } ] ) }.should raise_error(/does not match/)
     end
   end
 

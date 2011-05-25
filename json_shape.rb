@@ -137,14 +137,14 @@ module JsonShape
 
     when IsDefinition["dictionary"]
       schema_check( object, "object", schema, path )
-      regexp = Regexp.new(kind.keys) if kind.keys?
+
       object.each do |key, value|
         if kind.contents?
           schema_check( value, kind.contents, schema, path + [key] )
         end
-        if regexp and key !~ regexp
-          failure["key '#{key}'does not match /#{kind.matches}/"]
-        end
+	if kind.keys?
+          schema_check( key, kind.keys, schema, path + [key] )
+	end
       end
 
     # set theory

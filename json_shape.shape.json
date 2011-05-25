@@ -19,6 +19,7 @@
 
   "definition_pair" : ["either", {"choices" :
     [
+      [ "tuple", {"elements": [ "custom_type",                     ["literal",{}] , "comment"] } ],
       [ "tuple", {"elements": [ "builtin_type_without_parameters", ["literal",{}] , "comment"] } ],
 
       [ "tuple", {"elements": [ ["literal", "literal"]   , "anything"             , "comment"] } ],

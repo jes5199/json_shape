@@ -29,9 +29,9 @@ module JsonShape
       end
     end
 
-		def is_definition?(name)
+    def is_definition?(name)
       self.name == name
-		end
+    end
   end
 
   class Failure < ArgumentError
@@ -129,9 +129,9 @@ module JsonShape
         if kind.contents?
           schema_check( value, kind.contents, schema, path + [key] )
         end
-	if kind.keys?
+        if kind.keys?
           schema_check( key, kind.keys, schema, path + [key] )
-	end
+        end
       end
 
     # set theory

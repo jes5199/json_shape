@@ -74,8 +74,8 @@ module JsonShape
     # complex values
     when kind.is_definition?("array")
       failure[ "not an array" ] unless object.is_a? Array
-      object.each_with_index do |entry, i|
-        if kind.contents?
+      if kind.contents?
+        object.each_with_index do |entry, i|
           schema_check( entry, kind.contents, schema, path + [i] )
         end
       end

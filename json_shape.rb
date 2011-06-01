@@ -169,12 +169,10 @@ module JsonShape
       end
 
     # custom types
+    when schema[kind.name]
+      schema_check( object, schema[kind.name], schema, path )
     else
-      if schema[kind.name]
-        schema_check( object, schema[kind.name], schema, path )
-      else
-        raise "Invalid definition #{kind.inspect}"
-      end
+      raise "Invalid definition #{kind.inspect}"
     end
   end
 end

@@ -9,7 +9,7 @@ The schema_document should be a hash that represents your user-defined types.
 The base_type parameter is the name of the type predicate that you expect your document to conform to at the top level object. Since type definitions may be recursive, this is sufficient to validate a document of arbitrary complexity.
 If your document is not a valid member of base_type, an exception will be raised.
 
-It is possible to validate a given json_shape schema using the schema_scheme.js schema. You can validate schema_schema.js by running dogfood.rb .
+It is possible to validate a given json_shape schema using the schema_schema.js schema. You can validate schema_schema.js by running dogfood.rb .
 
 Valid built-in types are:
 

@@ -2,8 +2,11 @@ require 'json_shape'
 
 describe "JsonShape.schema_check" do
   describe "the anything type" do
-    it "should validate strings" do
+    it "should match anything" do
       JsonShape.schema_check( "x", "anything" )
+      JsonShape.schema_check(   1, "anything" )
+      JsonShape.schema_check(  [], "anything" )
+      JsonShape.schema_check(  {}, "anything" )
     end
   end
 
@@ -160,7 +163,7 @@ describe "JsonShape.schema_check" do
     it "should reject numbers less than the minimum" do
       lambda { JsonShape.schema_check( 8999.9, ["number", {"min" => 9000}] ) }.should raise_error
     end
-    it "should reject numbers greater than the minimum" do
+    it "should reject numbers greater than the maximum" do
       lambda { JsonShape.schema_check( 3.14, ["number", {"max" => 3}] ) }.should raise_error
     end
   end

@@ -1,4 +1,4 @@
-module JsonShape
+class JsonShape
   class Kind
     attr :name
     attr :params
@@ -35,12 +35,16 @@ module JsonShape
   end
 
   class Failure < ArgumentError
-    def initialize( message, object, kind, path )
-      @message, @object, @kind, @path = message, object, kind, path
+    def initialize( message, path )
+      @message, @path = message, path
     end
 
     def to_s
-      "#{ @message }: #{ @object.inspect } found when expecting #{ @kind.inspect }, at #{ @path.join('/') }"
+      if @path.empty?
+        message
+      else
+        "#{ @message } at #{ @path.join('/') }"
+      end
     end
 
     def message
@@ -48,89 +52,104 @@ module JsonShape
     end
   end
 
-  def self.schema_check( object, kind, schema = {}, path = [])
-    kind = Kind.new(kind)
+  def initialize( kind, schema = {}, path = [] )
+    @kind = Kind.new(kind)
+    @schema = schema
+    @path = path
+  end
+  attr :kind
 
-    failure = lambda{|message| raise Failure.new(message, object, kind, path) }
+  def fail( message )
+    raise Failure.new( message, @path )
+  end
 
+  def delve( key, kind )
+    JsonShape.new( kind, @schema, @path + [key] )
+  end
+
+  def refine( kind )
+    JsonShape.new( kind, @schema, @path )
+  end
+
+  def check( object )
     case
     # simple values
     when kind.is_definition?("string")
-      failure["not a string"] unless object.is_a? String
+      fail("not a string") unless object.is_a? String
       if kind.matches? and object !~ Regexp.new(kind.matches)
-        failure["does not match /#{kind.matches}/"]
+        fail( "does not match /#{kind.matches}/" )
       end
     when kind.is_definition?("number")
-      failure["not a number"] unless object.is_a? Numeric
-      failure["less than min #{kind.min}"] if kind.min? and object < kind.min
-      failure["greater than max #{kind.max}"] if kind.max? and object > kind.max
+      fail( "not a number" ) unless object.is_a? Numeric
+      fail( "less than min #{kind.min}" ) if kind.min? and object < kind.min
+      fail( "greater than max #{kind.max}" ) if kind.max? and object > kind.max
     when kind.is_definition?("boolean")
-      failure["not a boolean"] unless object == true || object == false
+      fail( "not a boolean" ) unless object == true || object == false
     when kind.is_definition?("null")
-      failure["not null"] unless object == nil
+      fail( "not null" ) unless object == nil
     when kind.is_definition?("undefined")
-      object == :undefined or failure["is not undefined"]
+      object == :undefined or fail( "is not undefined" )
 
     # complex values
     when kind.is_definition?("array")
-      failure[ "not an array" ] unless object.is_a? Array
+      fail( "not an array" ) unless object.is_a? Array
       if kind.contents?
         object.each_with_index do |entry, i|
-          schema_check( entry, kind.contents, schema, path + [i] )
+          delve( i, kind.contents ).check( entry )
         end
       end
       if kind.length?
-        schema_check( object.length, kind.length, schema, path + ["_length_"] )
+        delve( ".length", kind.length ).check(object.length)
       end
 
     when kind.is_definition?("object")
-      object.is_a?(Hash) or failure["not an object"]
+      object.is_a?(Hash) or fail( "not an object" )
       if kind.members?
         kind.members.each do |name, spec|
           val = object.has_key?(name) ? object[name] : :undefined
           next if val == :undefined and kind.allow_missing
-          schema_check( val, spec, schema, path + [name] )
+          delve( name, spec ).check(val)
         end
         if kind.allow_extra != true
           extras = object.keys - kind.members.keys
-          failure[ "#{extras.inspect} are not valid members" ] if extras != []
+          fail( "#{extras.inspect} are not valid members" ) if extras != []
         end
       end
 
     # obvious extensions
     when kind.is_definition?("anything")
-      object != :undefined or failure[ "is not defined" ]
+      object != :undefined or fail( "is not defined" )
 
     when kind.is_definition?("literal")
-      object == kind.params or failure[ "doesn't match" ]
+      object == kind.params or fail( "doesn't match" )
 
     when kind.is_definition?("integer")
-      schema_check( object, ["number", kind.params], schema, path)
-      object.is_a?(Integer) or failure[ "is not an integer" ]
+      refine( ["number", kind.params] ).check(object)
+      object.is_a?(Integer) or fail( "is not an integer" )
 
     when kind.is_definition?("enum")
       kind.values!.find_index do |value|
         value == object
-      end or failure["does not match any choice"]
+      end or fail( "does not match any choice" )
 
     when kind.is_definition?("tuple")
-      schema_check( object, "array", schema, path )
-      failure["tuple is the wrong size"] if object.length > kind.elements!.length
+      refine( "array" ).check( object )
+      fail( "tuple is the wrong size" ) if object.length > kind.elements!.length
       undefineds = [:undefined] * (kind.elements!.length - object.length)
       kind.elements!.zip(object + undefineds).each_with_index do |pair, i|
         spec, value = pair
-        schema_check( value, spec, schema, path + [i] )
+        delve( i, spec ).check( value )
       end
 
     when kind.is_definition?("dictionary")
-      schema_check( object, "object", schema, path )
+      refine( "object" ).check( object )
 
       object.each do |key, value|
         if kind.contents?
-          schema_check( value, kind.contents, schema, path + [key] )
+          delve( key, kind.contents ).check(value)
         end
         if kind.keys?
-          schema_check( key, kind.keys, schema, path + [key] )
+          delve( key, kind.keys ).check( key )
         end
       end
 
@@ -138,42 +157,46 @@ module JsonShape
     when kind.is_definition?("either")
       kind.choices!.find_index do |choice|
         begin
-          schema_check( object, choice, schema, path )
+          refine( choice ).check( object )
           true
         rescue Failure
           false
         end
-      end or failure["does not match any choice"]
+      end or fail( "does not match any choice" )
 
     when kind.is_definition?("optional")
-      object == :undefined or schema_check( object, kind.params, schema, path )
+      object == :undefined or refine( kind.params ).check( object )
 
     when kind.is_definition?("nullable")
-      object == nil or schema_check( object, kind.params, schema, path )
+      object == nil or refine( kind.params ).check( object )
 
     when kind.is_definition?("restrict")
       if kind.require?
         kind.require.each do |requirement|
-          schema_check( object, requirement, schema, path )
+          refine( requirement ).check( object )
         end
       end
       if kind.reject?
         kind.reject.each do |rule|
           begin
-            schema_check( object, rule, schema, path )
+            refine( rule ).check( object )
             false
           rescue Failure
             true
-          end or failure["violates #{rule.inspect}"]
+          end or fail( "violates #{rule.inspect}" )
         end
       end
 
     # custom types
-    when schema[kind.name]
-      schema_check( object, schema[kind.name], schema, path )
+    when @schema[kind.name]
+      refine( @schema[kind.name] ).check( object )
     else
       raise "Invalid definition #{kind.inspect}"
     end
+  end
+
+  def self.schema_check( object, kind, schema = {}, path = [])
+    self.new( kind, schema, path ).check(object)
   end
 end
 

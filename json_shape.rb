@@ -1,13 +1,13 @@
 class JsonShape
-  class Kind
+  class Parameters
     attr :name
     attr :params
 
-    def initialize(kind)
-      if kind.is_a?(Array)
-        @name, @params = kind
+    def initialize(parameters)
+      if parameters.is_a?(Array)
+        @name, @params = parameters
       else
-        @name = kind
+        @name = parameters
         @params = {}
       end
     end
@@ -34,6 +34,63 @@ class JsonShape
     end
   end
 
+  ###########################
+  # simple values
+  ###########################
+
+  class StringRule < JsonShape
+    def check(object)
+      fail("not a string") unless object.is_a? String
+      if parameters.matches? and object !~ Regexp.new(parameters.matches)
+        fail( "does not match /#{parameters.matches}/" )
+      end
+    end
+  end
+
+  class NumberRule < JsonShape
+    def check(object)
+      fail( "not a number" ) unless object.is_a? Numeric
+      fail( "less than min #{parameters.min}" ) if parameters.min? and object < parameters.min
+      fail( "greater than max #{parameters.max}" ) if parameters.max? and object > parameters.max
+    end
+  end
+
+  class BooleanRule < JsonShape
+    def check( object )
+      fail( "not a boolean" ) unless object == true || object == false
+    end
+  end
+
+  class NullRule < JsonShape
+    def check( object )
+      fail( "not null" ) unless object == nil
+    end
+  end
+
+  class UndefinedRule < JsonShape
+    def check( object )
+      object == :undefined or fail( "is not undefined" )
+    end
+  end
+
+  ###########################
+  # complex values
+  ###########################
+
+  class ArrayRule < JsonShape
+    def check( object )
+      fail( "not an array" ) unless object.is_a? Array
+      if parameters.contents?
+        object.each_with_index do |entry, i|
+          delve( i, parameters.contents ).check( entry )
+        end
+      end
+      if parameters.length?
+        delve( ".length", parameters.length ).check(object.length)
+      end
+    end
+  end
+
   class Failure < ArgumentError
     def initialize( message, path )
       @message, @path = message, path
@@ -52,110 +109,88 @@ class JsonShape
     end
   end
 
-  def initialize( kind, schema = {}, path = [] )
-    @kind = Kind.new(kind)
-    @schema = schema
-    @path = path
-  end
-  attr :kind
-
-  def fail( message )
-    raise Failure.new( message, @path )
-  end
-
-  def delve( key, kind )
-    JsonShape.new( kind, @schema, @path + [key] )
-  end
-
-  def refine( kind )
-    JsonShape.new( kind, @schema, @path )
-  end
-
-  def check( object )
-    case
-    # simple values
-    when kind.is_definition?("string")
-      fail("not a string") unless object.is_a? String
-      if kind.matches? and object !~ Regexp.new(kind.matches)
-        fail( "does not match /#{kind.matches}/" )
-      end
-    when kind.is_definition?("number")
-      fail( "not a number" ) unless object.is_a? Numeric
-      fail( "less than min #{kind.min}" ) if kind.min? and object < kind.min
-      fail( "greater than max #{kind.max}" ) if kind.max? and object > kind.max
-    when kind.is_definition?("boolean")
-      fail( "not a boolean" ) unless object == true || object == false
-    when kind.is_definition?("null")
-      fail( "not null" ) unless object == nil
-    when kind.is_definition?("undefined")
-      object == :undefined or fail( "is not undefined" )
-
-    # complex values
-    when kind.is_definition?("array")
-      fail( "not an array" ) unless object.is_a? Array
-      if kind.contents?
-        object.each_with_index do |entry, i|
-          delve( i, kind.contents ).check( entry )
-        end
-      end
-      if kind.length?
-        delve( ".length", kind.length ).check(object.length)
-      end
-
-    when kind.is_definition?("object")
+  class ObjectRule < JsonShape
+    def check(object)
       object.is_a?(Hash) or fail( "not an object" )
-      if kind.members?
-        kind.members.each do |name, spec|
+      if parameters.members?
+        parameters.members.each do |name, spec|
           val = object.has_key?(name) ? object[name] : :undefined
-          next if val == :undefined and kind.allow_missing
+          next if val == :undefined and parameters.allow_missing
           delve( name, spec ).check(val)
         end
-        if kind.allow_extra != true
-          extras = object.keys - kind.members.keys
+        if parameters.allow_extra != true
+          extras = object.keys - parameters.members.keys
           fail( "#{extras.inspect} are not valid members" ) if extras != []
         end
       end
+    end
+  end
 
-    # obvious extensions
-    when kind.is_definition?("anything")
+  ###########################
+  # obvious extensions
+  ###########################
+
+  class AnythingRule < JsonShape
+    def check(object)
       object != :undefined or fail( "is not defined" )
+    end
+  end
 
-    when kind.is_definition?("literal")
-      object == kind.params or fail( "doesn't match" )
+  class LiteralRule < JsonShape
+    def check(object)
+      object == parameters.params or fail( "doesn't match" )
+    end
+  end
 
-    when kind.is_definition?("integer")
-      refine( ["number", kind.params] ).check(object)
+  class IntegerRule < JsonShape
+    def check(object)
+      refine( ["number", parameters.params] ).check(object)
       object.is_a?(Integer) or fail( "is not an integer" )
+    end
+  end
 
-    when kind.is_definition?("enum")
-      kind.values!.find_index do |value|
+  class EnumRule < JsonShape
+    def check(object)
+      parameters.values!.find_index do |value|
         value == object
       end or fail( "does not match any choice" )
+    end
+  end
 
-    when kind.is_definition?("tuple")
+  class TupleRule < JsonShape
+    def check(object)
       refine( "array" ).check( object )
-      fail( "tuple is the wrong size" ) if object.length > kind.elements!.length
-      undefineds = [:undefined] * (kind.elements!.length - object.length)
-      kind.elements!.zip(object + undefineds).each_with_index do |pair, i|
+      fail( "tuple is the wrong size" ) if object.length > parameters.elements!.length
+      undefineds = [:undefined] * (parameters.elements!.length - object.length)
+      parameters.elements!.zip(object + undefineds).each_with_index do |pair, i|
         spec, value = pair
         delve( i, spec ).check( value )
       end
+    end
+  end
 
-    when kind.is_definition?("dictionary")
+  class DictionaryRule < JsonShape
+    def check(object)
       refine( "object" ).check( object )
 
       object.each do |key, value|
-        if kind.contents?
-          delve( key, kind.contents ).check(value)
+        if parameters.contents?
+          delve( key, parameters.contents ).check(value)
         end
-        if kind.keys?
-          delve( key, kind.keys ).check( key )
+        if parameters.keys?
+          delve( key, parameters.keys ).check( key )
         end
       end
+    end
+  end
 
-    # set theory
-    when kind.is_definition?("either")
-      kind.choices!.find_index do |choice|
+  ###########################
+  # set theory
+  ###########################
+
+  class EitherRule < JsonShape
+    def check(object)
+      parameters.choices!.find_index do |choice|
         begin
           refine( choice ).check( object )
           true
@@ -163,21 +198,30 @@ class JsonShape
           false
         end
       end or fail( "does not match any choice" )
+    end
+  end
 
-    when kind.is_definition?("optional")
-      object == :undefined or refine( kind.params ).check( object )
+  class OptionalRule < JsonShape
+    def check(object)
+      object == :undefined or refine( parameters.params ).check( object )
+    end
+  end
 
-    when kind.is_definition?("nullable")
-      object == nil or refine( kind.params ).check( object )
+  class NullableRule < JsonShape
+    def check(object)
+      object == nil or refine( parameters.params ).check( object )
+    end
+  end
 
-    when kind.is_definition?("restrict")
-      if kind.require?
-        kind.require.each do |requirement|
+  class RestrictRule < JsonShape
+    def check(object)
+      if parameters.require?
+        parameters.require.each do |requirement|
           refine( requirement ).check( object )
         end
       end
-      if kind.reject?
-        kind.reject.each do |rule|
+      if parameters.reject?
+        parameters.reject.each do |rule|
           begin
             refine( rule ).check( object )
             false
@@ -186,17 +230,56 @@ class JsonShape
           end or fail( "violates #{rule.inspect}" )
         end
       end
-
-    # custom types
-    when @schema[kind.name]
-      refine( @schema[kind.name] ).check( object )
-    else
-      raise "Invalid definition #{kind.inspect}"
     end
   end
 
-  def self.schema_check( object, kind, schema = {}, path = [])
-    self.new( kind, schema, path ).check(object)
+  def self.new( parameters, schema = {}, path = [] )
+    return super if self != JsonShape
+
+    _parameters = Parameters.new(parameters)
+    return super unless _parameters.name =~ /^[a-z]+$/
+    if klass = const_get( "#{_parameters.name.capitalize}Rule" ) rescue nil
+      return klass.new( parameters, schema, path )
+    end
+
+    super
+  end
+
+  def initialize( parameters, schema = {}, path = [] )
+    @parameters = Parameters.new(parameters)
+    @schema = schema
+    @path = path
+
+    if klass = self.klass.const_get( "#{parameters.name.capitalize}Rule" ) rescue nil
+      return klass.new( parameters, schema, path )
+    end
+  end
+  attr :parameters
+
+  def fail( message )
+    raise Failure.new( message, @path )
+  end
+
+  def delve( key, parameters )
+    JsonShape.new( parameters, @schema, @path + [key] )
+  end
+
+  def refine( parameters )
+    JsonShape.new( parameters, @schema, @path )
+  end
+
+  def check( object )
+    case
+    # custom types
+    when @schema[parameters.name]
+      refine( @schema[parameters.name] ).check( object )
+    else
+      raise "Invalid definition #{parameters.inspect}"
+    end
+  end
+
+  def self.schema_check( object, parameters, schema = {}, path = [])
+    self.new( parameters, schema, path ).check(object)
   end
 end
 

@@ -233,18 +233,6 @@ class JsonShape
     end
   end
 
-  def self.new( parameters, schema = {}, path = [] )
-    return super if self != JsonShape
-
-    _parameters = Parameters.new(parameters)
-    return super unless _parameters.name =~ /^[a-z]+$/
-    if klass = const_get( "#{_parameters.name.capitalize}Rule" ) rescue nil
-      return klass.new( parameters, schema, path )
-    end
-
-    super
-  end
-
   def initialize( parameters, schema = {}, path = [] )
     @parameters = Parameters.new(parameters)
     @schema = schema
@@ -264,14 +252,20 @@ class JsonShape
     JsonShape.new( parameters, @schema, @path + [key] )
   end
 
+  def builtin( parameters )
+    _parameters = Parameters.new(parameters)
+    klass = ( JsonShape.const_get( "#{_parameters.name.capitalize}Rule" ) rescue nil)
+  end
+
   def refine( parameters )
     JsonShape.new( parameters, @schema, @path )
   end
 
   def check( object )
-    case
     # custom types
-    when @schema[parameters.name]
+    if b = builtin( parameters.name )
+      b.new([parameters.name, parameters.params].compact, @schema, @path).check( object )
+    elsif @schema[parameters.name]
       refine( @schema[parameters.name] ).check( object )
     else
       raise "Invalid definition #{parameters.inspect}"

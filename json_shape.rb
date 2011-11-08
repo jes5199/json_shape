@@ -268,18 +268,18 @@ class JsonShape
   end
 
   def refine( parameters )
-    JsonShape.new( parameters, @schema, @path )
-  end
-
-  def check( object )
-    # custom types
+    parameters = JsonShape::Parameters.new( parameters )
     if b = builtin( parameters.name )
-      b.new([parameters.name, parameters.params].compact, @schema, @path).check( object )
+      b.new(parameters, @schema, @path)
     elsif @schema[parameters.name]
-      refine( @schema[parameters.name] ).check( object )
+      refine( @schema[parameters.name] )
     else
       raise "Invalid definition #{parameters.inspect}"
     end
+  end
+
+  def check( object )
+    refine( parameters ).check( object )
   end
 
   def self.schema_check( object, parameters, schema = {}, path = [])

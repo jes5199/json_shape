@@ -40,11 +40,24 @@ class JsonShape
     end
   end
 
+  @@handlers = Hash.new
+  def self.handles( name )
+    @@handlers[name.to_s] = self
+  end
+
+  def self.handler( parameters )
+    _parameters = Parameters.new(parameters)
+    klass = @@handlers[_parameters.name]
+  end
+
+
   ###########################
   # simple values
   ###########################
 
   class StringRule < JsonShape
+    handles "string"
+
     def check(object)
       fail("not a string") unless object.is_a? String
       if parameters.matches? and object !~ Regexp.new(parameters.matches)
@@ -54,6 +67,8 @@ class JsonShape
   end
 
   class NumberRule < JsonShape
+    handles "number"
+
     def check(object)
       fail( "not a number" ) unless object.is_a? Numeric
       fail( "less than min #{parameters.min}" ) if parameters.min? and object < parameters.min
@@ -62,18 +77,24 @@ class JsonShape
   end
 
   class BooleanRule < JsonShape
+    handles "boolean"
+
     def check( object )
       fail( "not a boolean" ) unless object == true || object == false
     end
   end
 
   class NullRule < JsonShape
+    handles "null"
+
     def check( object )
       fail( "not null" ) unless object == nil
     end
   end
 
   class UndefinedRule < JsonShape
+    handles "undefined"
+
     def check( object )
       object == :undefined or fail( "is not undefined" )
     end
@@ -84,6 +105,8 @@ class JsonShape
   ###########################
 
   class ArrayRule < JsonShape
+    handles "array"
+
     def check( object )
       fail( "not an array" ) unless object.is_a? Array
       if parameters.contents?
@@ -116,6 +139,8 @@ class JsonShape
   end
 
   class ObjectRule < JsonShape
+    handles "object"
+
     def check(object)
       object.is_a?(Hash) or fail( "not an object" )
       if parameters.members?
@@ -137,18 +162,24 @@ class JsonShape
   ###########################
 
   class AnythingRule < JsonShape
+    handles "anything"
+
     def check(object)
       object != :undefined or fail( "is not defined" )
     end
   end
 
   class LiteralRule < JsonShape
+    handles "literal"
+
     def check(object)
       object == parameters.params or fail( "doesn't match" )
     end
   end
 
   class IntegerRule < JsonShape
+    handles "integer"
+
     def check(object)
       refine( ["number", parameters.params] ).check(object)
       object.is_a?(Integer) or fail( "is not an integer" )
@@ -156,6 +187,8 @@ class JsonShape
   end
 
   class EnumRule < JsonShape
+    handles "enum"
+
     def check(object)
       parameters.values!.find_index do |value|
         value == object
@@ -164,6 +197,8 @@ class JsonShape
   end
 
   class TupleRule < JsonShape
+    handles "tuple"
+
     def check(object)
       refine( "array" ).check( object )
       fail( "tuple is the wrong size" ) if object.length > parameters.elements!.length
@@ -176,6 +211,8 @@ class JsonShape
   end
 
   class DictionaryRule < JsonShape
+    handles "dictionary"
+
     def check(object)
       refine( "object" ).check( object )
 
@@ -195,6 +232,8 @@ class JsonShape
   ###########################
 
   class EitherRule < JsonShape
+    handles "either"
+
     def check(object)
       parameters.choices!.find_index do |choice|
         begin
@@ -208,18 +247,24 @@ class JsonShape
   end
 
   class OptionalRule < JsonShape
+    handles "optional"
+
     def check(object)
       object == :undefined or refine( parameters.params ).check( object )
     end
   end
 
   class NullableRule < JsonShape
+    handles "nullable"
+
     def check(object)
       object == nil or refine( parameters.params ).check( object )
     end
   end
 
   class RestrictRule < JsonShape
+    handles "restrict"
+
     def check(object)
       if parameters.require?
         parameters.require.each do |requirement|
@@ -262,14 +307,9 @@ class JsonShape
     JsonShape.new( @parameters, @schema, @path + [key] )
   end
 
-  def builtin( parameters )
-    _parameters = Parameters.new(parameters)
-    klass = ( JsonShape.const_get( "#{_parameters.name.capitalize}Rule" ) rescue nil)
-  end
-
   def refine( parameters )
     parameters = JsonShape::Parameters.new( parameters )
-    if b = builtin( parameters.name )
+    if b = self.class.handler( parameters.name )
       b.new(parameters, @schema, @path)
     elsif @schema[parameters.name]
       refine( @schema[parameters.name] )

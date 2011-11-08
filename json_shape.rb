@@ -343,5 +343,5 @@ if __FILE__ == $0
 
   data = JSON.parse( stream.read )
 
-  JsonShape.schema_check( data, type, schema )
+  JsonShape.new(type, schema).check( data )
 end

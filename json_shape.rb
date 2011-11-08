@@ -4,7 +4,9 @@ class JsonShape
     attr :params
 
     def initialize(parameters)
-      if parameters.is_a?(Array)
+      if parameters.is_a?(Parameters)
+        @name, @params = parameters.to_a
+      elsif parameters.is_a?(Array)
         @name, @params = parameters
       else
         @name = parameters
@@ -13,7 +15,11 @@ class JsonShape
     end
 
     def inspect
-      [name, params].inspect
+      to_a.inspect
+    end
+
+    def to_a
+      [name, params]
     end
 
     def method_missing(name, *args)
@@ -249,7 +255,11 @@ class JsonShape
   end
 
   def delve( key, parameters )
-    JsonShape.new( parameters, @schema, @path + [key] )
+    refine( parameters ).add_key( key )
+  end
+
+  def add_key(key)
+    JsonShape.new( @parameters, @schema, @path + [key] )
   end
 
   def builtin( parameters )

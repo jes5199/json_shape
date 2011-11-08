@@ -50,6 +50,24 @@ class JsonShape
     klass = @@handlers[_parameters.name]
   end
 
+  class Failure < ArgumentError
+    def initialize( message, path )
+      @message, @path = message, path
+    end
+
+    def to_s
+      if @path.empty?
+        message
+      else
+        "#{ @message } at #{ @path.join('/') }"
+      end
+    end
+
+    def message
+      to_s
+    end
+  end
+
 
   ###########################
   # simple values
@@ -117,24 +135,6 @@ class JsonShape
       if parameters.length?
         delve( ".length", parameters.length ).check(object.length)
       end
-    end
-  end
-
-  class Failure < ArgumentError
-    def initialize( message, path )
-      @message, @path = message, path
-    end
-
-    def to_s
-      if @path.empty?
-        message
-      else
-        "#{ @message } at #{ @path.join('/') }"
-      end
-    end
-
-    def message
-      to_s
     end
   end
 

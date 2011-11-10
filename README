@@ -4,7 +4,7 @@ Your schema document should be written as a dictionary of "types" that you defin
 A shape predicate is either a string representing the name of a type (either one of your types or a built-in type), or a tuple (an array, really, in JSON), where the first argument is a string (always the name of a built-in type) and the second argument is a parameter for the type (each built-in type defines different valid parameters).
 
 To validate a given JSON document, parse it into a structure of ruby arrays and hashes using a json library of your choice, and pass it to json_shape like so:
-    JsonShape.schema_check( my_parsed_document, base_type, my_parsed_schema_document )
+    JsonShape.new(base_type, my_parsed_schema_document).check( my_parsed_document )
 The schema_document should be a hash that represents your user-defined types.
 The base_type parameter is the name of the type predicate that you expect your document to conform to at the top level object. Since type definitions may be recursive, this is sufficient to validate a document of arbitrary complexity.
 If your document is not a valid member of base_type, an exception will be raised.

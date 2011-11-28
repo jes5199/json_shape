@@ -62,4 +62,4 @@ Valid built-in types are:
         "choices": a list of type predicates. The value must match one of the given types.
 
 
-GPL, copyright Jesse Wolfe and Puppet Labs.
+Apache License, copyright Jesse Wolfe and Puppet Labs.
